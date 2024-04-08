@@ -1,0 +1,76 @@
+version: '3.4'
+
+services:
+  app:
+    build:
+      context: ./ # The path in the machine that have the files, in this case root
+      dockerfile: ./Dockerfile # The name of the Dockerfile definition
+    container_name: app
+    #restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - db
+    ports:
+      - "3000:3000" # To expose the app to the machine localhost (machine-port:container:port)
+    environment:
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_NAME: ${DB_NAME}
+      DATABASE_PORT: ${DB_PORT}
+      DATABASE_HOST: ${DB_HOST}
+      PORT: ${PORT}
+      BROKER_HOST: ${BROKER_HOST}
+      BROKER_PORT: ${BROKER_PORT}
+      BROKER_USER: ${BROKER_USER}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
+    command: npm run start:app
+  
+  db:
+    image: postgres # Cambia "nombre_imagen:tag" al nombre y etiqueta de tu imagen Docker
+    container_name: db
+    networks:
+      - app-network
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Mapea el puerto de la base de datos PostgreSQL
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      BROKER_HOST: ${BROKER_HOST}
+      BROKER_PORT: ${BROKER_PORT}
+      BROKER_USER: ${BROKER_USER}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
+    
+
+  mqtt:
+    image: mqtt
+    build:
+      context: ./ # The path in the machine that have the files, in this case root
+      dockerfile: ./mqtt.Dockerfile # The name of the Dockerfile definition
+    container_name: mqtt
+    # restart: unless-stopped
+    depends_on:
+      - app
+    networks:
+      - app-network
+    environment:
+      BROKER_HOST: ${BROKER_HOST}
+      BROKER_PORT: ${BROKER_PORT}
+      BROKER_USER: ${BROKER_USER}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_NAME: ${DB_NAME}
+      DATABASE_PORT: ${DB_PORT}
+      DATABASE_HOST: ${DB_HOST}
+      PORT: ${PORT}
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-volume:
