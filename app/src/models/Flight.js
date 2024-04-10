@@ -59,6 +59,10 @@ const Flight = sequelize.define('Flight', {
   currency: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   }
 }, {
   timestamps: true,
