@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/flights/:id', ComprasController.createInfoCompras);
 
-router.get('/compras', ComprasController.getValidationCompras);
+router.get('/flights/:id/validations', ComprasController.manejarValidation);
 
 
 module.exports = router;
