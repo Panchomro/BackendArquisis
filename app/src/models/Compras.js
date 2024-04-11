@@ -4,12 +4,17 @@ const sequelize = new Sequelize('postgres://panchomro:Arya1234@db:5432/e0arquisi
 
 const InfoCompras = sequelize.define('InfoCompras', {
     request_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         primaryKey: true,
+        defaultValue: Sequelize.UUIDV4,
+    },
+    flight_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     },
     group_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
     },
     departure_airport: {
@@ -38,6 +43,10 @@ const InfoCompras = sequelize.define('InfoCompras', {
     },
     seller: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    valid: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
     }
 }, {

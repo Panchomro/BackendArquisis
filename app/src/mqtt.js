@@ -34,35 +34,41 @@ mqttClient.on('connect', function () {
   });
 });
 
-
-// Enviar información al tópico flights/requests
-const requestData = { /* Datos de la solicitud */ };
-mqttClient.publish(TOPICRequest, JSON.stringify(requestData), function (err) {
-  if (err) {
-    console.error('Error al publicar en el tópico flights/requests:', err);
-  } else {
-    console.log('Información enviada al tópico flights/requests');
-  }
-});
+function publishInfoCompras(data) {
+  mqttClient.publish(TOPICRequest, JSON.stringify(data), function (err) {
+    if (err) {
+      console.error('Error al publicar mensaje', err);
+    } else {
+      console.log('Mensaje publicado en el tópico', TOPICRequest);
+    }
+  });
+}
 
 
 mqttClient.on('message', async function (topic, message) {
   console.log('Mensaje recibido en el tópico', topic, ':', message.toString());
   if (topic === TOPICFlights) {
     try {
-      // Convertir la cadena de texto JSON en un objeto JSON
+      
       console.log('message mqtt recibido:', message);
+
       const flightData = JSON.parse(message);
+
       console.log('Datos del vuelo mqtt recibidos despues de parse:', flightData);
-      // Enviar los datos del vuelo a tu API mediante Axios
+      
       await axios.post('http://app:3000/flights', flightData);
+
       console.log('Datos del vuelo enviados a la API');
+      
     } catch (error) {
       console.error('Error al procesar el mensaje:', error);
     }
   } else if (topic === TOPICValidation) {
     try {
-      console.log('Datos de validación enviados a la API');
+      const validationData = JSON.parse(message);
+      console.log('Datos de validación mqtt recibidos:', validationData);
+
+      await axios.post('http://app:3000/flights/:id/validations', validationData);
     } catch (error) {
       console.error('Error al procesar el mensaje:', error);
     }
