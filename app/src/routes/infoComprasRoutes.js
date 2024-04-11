@@ -3,7 +3,7 @@ const ComprasController = require('../controllers/comprasController');
 
 const router = express.Router();
 
-router.post('/flights/:id', ComprasController.createInfoCompras);
+router.post('/flights/:id/buy', ComprasController.createInfoCompras);
 
 router.get('/flights/:id/validations', ComprasController.manejarValidation);
 
