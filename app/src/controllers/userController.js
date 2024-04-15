@@ -26,11 +26,38 @@ class UserController {
         }
     }
 
+    static async getUser(req, res) {
+        try{
+            // Obtener los datos del cuerpo de la post
+            const request_body = req.body;
+
+            // Obtener el user de la BDD filtrado por id
+            const foundUser = await User.findByPk(request_body.user_id);
+
+            if (!foundUser) {
+                throw new Error('Usuario no encontrado.');
+            }
+
+            res.send({
+                user_id: foundUser.user_id,
+                email: foundUser.email,
+                name: foundUser.name,
+                lastname: foundUser.lastname,
+                phone: foundUser.phone
+            });
+
+        } catch(error) {
+            console.error('Error al encontrar usuario:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
+    }
+
     static async updateUser(req, res) {
         try{
             // Obtener los datos del cuerpo de la post
             const request_body = req.body;
 
+            // Obtener el user de la BDD filtrado por 
             const updatedUser = await User.findByPk(request_body.user_id);
 
             if (!updatedUser) {
