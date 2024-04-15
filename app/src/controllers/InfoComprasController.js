@@ -1,9 +1,10 @@
-const InfoCompras = require('../models/Compras');
+const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
 const { Op } = require('sequelize');
 const mqttClient = require('../mqtt');
+const { use } = require('../routes/infoComprasRoutes');
 
-class ComprasController {
+class InfoComprasController {
     static async createInfoCompras(idVuelo) {
         try{
             const fechaHoraActual = new Date();
@@ -16,6 +17,7 @@ class ComprasController {
 
             const infoCompra = await InfoCompras.create({
                 flight_id: vuelo.id,
+                user_id: 1,
                 group_id: vuelo.group_id,
                 departure_airport: vuelo.departure_airport_id,
                 arrival_airport: vuelo.arrival_airport_id,
@@ -34,7 +36,8 @@ class ComprasController {
 
     static async enviarCompraMqtt(req, res) {
         try {
-            const infoCompra = await ComprasController.createInfoCompras(req.params.id);
+            const infoCompra = await InfoComprasController.createInfoCompras(req.params.id);
+            console.log('Compra creada exitosamente con request_id:', req.params.id);
 
             res.status(201).json({ message: 'Compra creada exitosamente' });
 
@@ -76,7 +79,17 @@ class ComprasController {
             res.status(500).json({ error: 'Error interno del servidor' });
         }
     }
+
+    static async mostrarInfoCompras(req, res) {
+        try {
+            const infoCompras = await InfoCompras.findAll();
+            res.status(200).json(infoCompras);
+        } catch (error) {
+            console.error('Error al buscar objetos InfoCompras:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
+    }
 }
 
 
-module.exports = ComprasController;
+module.exports = InfoComprasController;

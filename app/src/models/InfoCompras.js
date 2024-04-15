@@ -9,6 +9,10 @@ const InfoCompras = sequelize.define('InfoCompras', {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
     },
+    user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     flight_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

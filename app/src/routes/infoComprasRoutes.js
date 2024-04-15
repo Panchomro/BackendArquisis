@@ -1,11 +1,13 @@
 const express = require('express');
-const ComprasController = require('../controllers/comprasController');
+const InfoComprasController = require('../controllers/InfoComprasController');
 
 const router = express.Router();
 
-router.post('/flights/:id/buy', ComprasController.createInfoCompras);
+router.post('/flights/:id/buy', InfoComprasController.enviarCompraMqtt);
 
-router.get('/flights/:id/validations', ComprasController.manejarValidation);
+router.get('/flights/:id/validations', InfoComprasController.manejarValidation);
+
+router.get('/flights/buy', InfoComprasController.mostrarInfoCompras)
 
 
 module.exports = router;
