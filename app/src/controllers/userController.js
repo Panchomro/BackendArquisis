@@ -28,11 +28,12 @@ class UserController {
 
     static async getUser(req, res) {
         try{
+            const { id } = req.params;
             // Obtener los datos del cuerpo de la post
             const request_body = req.body;
 
             // Obtener el user de la BDD filtrado por id
-            const foundUser = await User.findByPk(request_body.user_id);
+            const foundUser = await User.findByPk(id);
 
             if (!foundUser) {
                 throw new Error('Usuario no encontrado.');
@@ -54,11 +55,12 @@ class UserController {
 
     static async updateUser(req, res) {
         try{
+            const { id } = req.params;
             // Obtener los datos del cuerpo de la post
             const request_body = req.body;
 
-            // Obtener el user de la BDD filtrado por 
-            const updatedUser = await User.findByPk(request_body.user_id);
+            // Obtener el user de la BDD filtrado por id
+            const updatedUser = await User.findByPk(id);
 
             if (!updatedUser) {
                 throw new Error('Usuario no encontrado.');
