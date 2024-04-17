@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}`);
+const sequelize = new Sequelize(`postgres://${'lukasguthrie'}:${'204290482'}@db:${'5432'}/${'e0arquisis'}`);
 
 
 const User = sequelize.define('User', {
