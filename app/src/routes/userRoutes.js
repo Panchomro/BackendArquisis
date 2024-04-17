@@ -7,6 +7,6 @@ router.post('/user/new', UserController.createUser);
 
 router.get('/user/:id', UserController.getUser);
 
-router.update('/user/:id/update', UserController.updateUser);
+router.patch('/user/:id/update', UserController.updateUser);
 
 module.exports = router;
