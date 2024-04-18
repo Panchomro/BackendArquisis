@@ -34,16 +34,6 @@ mqttClient.on('connect', function () {
   });
 });
 
-function publishInfoCompras(data) {
-  mqttClient.publish(TOPICRequest, JSON.stringify(data), function (err) {
-    if (err) {
-      console.error('Error al publicar mensaje', err);
-    } else {
-      console.log('Mensaje publicado en el tópico', TOPICRequest);
-    }
-  });
-}
-
 
 mqttClient.on('message', async function (topic, message) {
   console.log('Mensaje recibido en el tópico', topic, ':', message.toString());
@@ -67,8 +57,11 @@ mqttClient.on('message', async function (topic, message) {
     try {
       const validationData = JSON.parse(message);
       console.log('Datos de validación mqtt recibidos:', validationData);
-
-      await axios.post('http://app:3000/flights/:id/validations', validationData);
+      if (validationData.group_id === 13) {
+        await axios.post('http://app:3000/flights/validations/${validationData.request_id}', validationData);
+        console.log('Datos de validación enviados a la API');
+      }
+      
     } catch (error) {
       console.error('Error al procesar el mensaje:', error);
     }

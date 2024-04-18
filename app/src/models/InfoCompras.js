@@ -3,11 +3,14 @@ const sequelize = new Sequelize('postgres://panchomro:Arya1234@db:5432/e0arquisi
 
 
 const InfoCompras = sequelize.define('InfoCompras', {
-    request_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.UUIDV4,
+    },
+    request_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
     },
     user_id: {
         type: DataTypes.INTEGER,
