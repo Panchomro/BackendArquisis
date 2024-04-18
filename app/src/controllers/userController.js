@@ -7,9 +7,9 @@ class UserController {
         try{
             // Obtener los datos del cuerpo de la post
             const request_body = req.body;
-
+            console.log(request_body);
             // Crear el user en la base de datos
-            const User = await User.create({
+            const newUser = await User.create({
                 user_id: request_body.user_id,
                 email: request_body.email,
                 password: request_body.password,
@@ -19,7 +19,7 @@ class UserController {
             });
 
             // Enviar el response para confirmar la correcta creacion del usuario
-            res.status(201).send(User)
+            res.status(201).send(newUser)
         } catch (error) {
             console.error('Error al crear usuario:', error);
             res.status(500).json({ error: 'Error interno del servidor' });
