@@ -1,21 +1,21 @@
 {
   "development": {
-    "username": "lukasguthrie",
-    "password": "204290482",
+    "username": "srasmussenc",
+    "password": "123456",
     "database": "e0arquisis",
     "host": "db",
     "dialect": "postgres"
   },
   "test": {
-    "username": "lukasguthrie",
-    "password": "204290482",
+    "username": "srasmussenc",
+    "password": "123456",
     "database": "e0arquisis",
     "host": "db",
     "dialect": "postgres"
   },
   "production": {
-    "username": "lukasguthrie",
-    "password": "204290482",
+    "username": "srasmussenc",
+    "password": "123456",
     "database": "e0arquisis",
     "host": "db",
     "dialect": "postgres"
