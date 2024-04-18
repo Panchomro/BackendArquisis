@@ -83,8 +83,6 @@ class InfoComprasController {
         mqttClient.on('error', function (error) {
             console.error('Error al conectar al broker MQTT dentro de enviarCompraMqtt:', error);
         });
-
-        return status(200).json({ message: 'Compra enviada correctamente, esperando validación' });
     }
 
     static async manejarValidation(req, res) {

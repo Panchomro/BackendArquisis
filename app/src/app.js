@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+const cors = require('cors');
 const express = require('express');
 
 const flightRoutes = require('./routes/flightRoutes');
@@ -10,10 +10,12 @@ const InfoCompras = require('./models/InfoCompras');
 
 const app = express();
 
+
 const PORT = process.env.PORT;
 
 // Middleware
 app.use(express.json());
+app.use(cors());
 app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
 app.use(express.urlencoded({ extended: false }));
