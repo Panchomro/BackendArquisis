@@ -29,7 +29,8 @@ class FlightController {
           carbon_emissions: JSON.parse(carbonEmission).this_flight || null,
           price: price,
           currency: currency,
-          airlineLogo: airlineLogo
+          airlineLogo: airlineLogo,
+          quantity: 90
         });
       });
   

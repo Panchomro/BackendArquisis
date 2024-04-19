@@ -3,11 +3,22 @@ const sequelize = new Sequelize('postgres://panchomro:Arya1234@db:5432/e0arquisi
 
 
 const InfoCompras = sequelize.define('InfoCompras', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+    },
     request_id: {
         type: DataTypes.UUID,
         allowNull: false,
-        primaryKey: true,
-        defaultValue: Sequelize.UUIDV4,
+    },
+    user_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    airline_logo: {
+        type: DataTypes.STRING,
+        allowNull: false,
     },
     flight_id: {
         type: DataTypes.INTEGER,
@@ -26,7 +37,7 @@ const InfoCompras = sequelize.define('InfoCompras', {
         allowNull: false,
     },
     departure_time: {
-        type: DataTypes.DATE,
+        type: DataTypes.STRING,
         allowNull: false,
     },
     datetime: {
@@ -43,6 +54,10 @@ const InfoCompras = sequelize.define('InfoCompras', {
     },
     seller: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    isValidated: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
     },
     valid: {
