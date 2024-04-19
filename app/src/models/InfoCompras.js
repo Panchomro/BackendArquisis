@@ -9,7 +9,7 @@ const InfoCompras = sequelize.define('InfoCompras', {
         primaryKey: true,
     },
     request_id: {
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
         allowNull: false,
     },
     user_id: {
@@ -37,7 +37,7 @@ const InfoCompras = sequelize.define('InfoCompras', {
         allowNull: false,
     },
     departure_time: {
-        type: DataTypes.DATE,
+        type: DataTypes.STRING,
         allowNull: false,
     },
     datetime: {

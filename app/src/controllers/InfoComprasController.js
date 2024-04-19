@@ -1,7 +1,7 @@
 const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
 const mqtt = require('mqtt');
-const { v4: uuidv4 } = require('uuid');
+const uuid = require('uuid-random');
 require('dotenv').config();
 
 class InfoComprasController {
@@ -10,26 +10,44 @@ class InfoComprasController {
             const { id, user_id } = req.params;
             console.log('idVuelo:', id);
             console.log('user_id:', user_id);
-            const fechaHoraActual = new Date();
-            const datetime = fechaHoraActual.toISOString().slice(0, 19).replace('T', ' ');
+            const fechaHoraActualUTC = new Date();
+            fechaHoraActualUTC.setHours(fechaHoraActualUTC.getHours() - 4);
+            const datetimeChileno = fechaHoraActualUTC.toISOString().slice(0, 19).replace('T', ' ');
             const vuelo = await Flight.findByPk(id);
+
+            const departureTimeCL = vuelo.departure_airport_time;
+            departureTimeCL.setHours(departureTimeCL.getHours() - 4);
+
+            // Obtener componentes de fecha y hora
+            const year = departureTimeCL.getFullYear();
+            const month = String(departureTimeCL.getMonth() + 1).padStart(2, '0'); // Sumar 1 al mes porque los meses en JavaScript van de 0 a 11
+            const day = String(departureTimeCL.getDate()).padStart(2, '0');
+            const hours = String(departureTimeCL.getHours()).padStart(2, '0');
+            const minutes = String(departureTimeCL.getMinutes()).padStart(2, '0');
+
+            // Construir la cadena de fecha y hora
+            const departureTimeChileno = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+            console.log(departureTimeChileno);
+
 
             if (!vuelo) {
                 throw new Error('Vuelo no encontrado');
             }
 
-            const requestId = uuidv4().toString();
+            const requestId = uuid();
+            
 
             const infoCompra = await InfoCompras.create({
                 request_id: requestId,
                 flight_id: vuelo.id,
                 user_id: user_id,
                 airline_logo: vuelo.airline_logo,
-                group_id: 13,
+                group_id: "13",
                 departure_airport: vuelo.departure_airport_id,
                 arrival_airport: vuelo.arrival_airport_id,
-                departure_time: vuelo.departure_airport_time,
-                datetime: datetime,
+                departure_time: departureTimeChileno,
+                datetime: datetimeChileno,
                 quantity: 90,
                 seller: 0,
                 isValidated: false,
@@ -60,7 +78,7 @@ class InfoComprasController {
             departure_time: infoCompra.departure_time, 
             datetime: infoCompra.datetime,
             deposit_token: "", 
-            quantity: infoCompra.quantity, 
+            quantity: 1, 
             seller: infoCompra.seller
         };
         
