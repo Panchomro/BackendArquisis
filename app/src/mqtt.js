@@ -54,16 +54,18 @@ mqttClient.on('message', async function (topic, message) {
       console.error('Error al procesar el mensaje:', error);
     }
   } else if (topic === TOPICValidation) {
-    try {
       const validationData = JSON.parse(message);
       console.log('Datos de validación mqtt recibidos:', validationData);
       if (validationData.group_id === 13) {
-        await axios.post('http://app:3000/flights/validations/${validationData.request_id}', validationData);
-        console.log('Datos de validación enviados a la API');
-      }
+        axios.post(`http://app:3000/flights/validations/${validationData.request_id}`, validationData).then(response => {
+          // Handle successful response
+          console.log('Datos de validación enviados a la API', response.data);
+        })
+        .catch(error => {
+          // Handle error
+          console.error('Error fetching data:', error);
       
-    } catch (error) {
-      console.error('Error al procesar el mensaje:', error);
+      });
     }
   }
 });

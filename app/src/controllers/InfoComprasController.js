@@ -77,6 +77,7 @@ class InfoComprasController {
         mqttClient.on('connect', function () {
             console.log('Conectado al broker MQTT dentro de enviarCompraMqtt');
             mqttClient.publish('flights/requests', JSON.stringify(jsonData));
+            console.log('Request enviada al broker MQTT');
             mqttClient.end();
         });
         
@@ -88,6 +89,10 @@ class InfoComprasController {
     static async manejarValidation(req, res) {
         try {
             const { request_id } = req.params;
+            console.log('request_id:', request_id);
+            console.log('req.body:', req.body);
+            const validationData = req.body;
+            console.log('validationData:', validationData)
             const infoCompra = await InfoCompras.findOne({ 
                 where: { request_id: request_id }
             });
@@ -100,11 +105,14 @@ class InfoComprasController {
                 infoCompra.quantity -= 1;
                 await infoCompra.save();
                 console.log('Compra validada');
+                res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
             } else if (validationData.valid === false) {
                 console.log('Compra invalida');
+                res.status(200).json({ message: 'Validación no exitosa, compra rechazada' });
             }
 
             console.log(`Se actualizó el atributo 'valid' de InfoCompras con request_id ${infoCompra.request_id}`);
+            
         }
         catch (error) {
             console.error('Error al obtener compras:', error);
