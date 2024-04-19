@@ -8,6 +8,7 @@ class InfoComprasController {
     static async createInfoCompras(req, res) {
         try{
             const { id, user_id } = req.params;
+            const { quantity } = req.body; 
             console.log('idVuelo:', id);
             console.log('user_id:', user_id);
             const fechaHoraActualUTC = new Date();
@@ -37,7 +38,6 @@ class InfoComprasController {
 
             const requestId = uuid();
             
-
             const infoCompra = await InfoCompras.create({
                 request_id: requestId,
                 flight_id: vuelo.id,
@@ -48,14 +48,14 @@ class InfoComprasController {
                 arrival_airport: vuelo.arrival_airport_id,
                 departure_time: departureTimeChileno,
                 datetime: datetimeChileno,
-                quantity: 90,
+                quantity: quantity,
                 seller: 0,
                 isValidated: false,
                 valid: false,
             });
 
             console.log('infocompra:', infoCompra);
-            const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id);
+            const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
             InfoComprasController.enviarCompraMqtt(jsonData);
 
         } catch (error) {
@@ -64,7 +64,7 @@ class InfoComprasController {
         }
     }
 
-    static async findCompraEnviarJSON(id) {
+    static async findCompraEnviarJSON(id, quantity) {
         console.log('idCompra:', id)
         const infoCompra = await InfoCompras.findByPk(id);
 
@@ -78,7 +78,7 @@ class InfoComprasController {
             departure_time: infoCompra.departure_time, 
             datetime: infoCompra.datetime,
             deposit_token: "", 
-            quantity: 1, 
+            quantity: quantity, 
             seller: infoCompra.seller
         };
         
@@ -117,15 +117,19 @@ class InfoComprasController {
             const infoCompra = await InfoCompras.findOne({ 
                 where: { request_id: request_id }
             });
+            const vuelo = await Flight.findOne({
+                where: { id: infoCompra.flight_id }
+            });
 
             if (!infoCompra) {
                 throw new Error('Compra no encontrada');
             }
             if (validationData.valid === true) {
                 infoCompra.valid = validationData.valid;
-                infoCompra.quantity -= 1;
+                vuelo.quantity -= infoCompra.quantity;
                 infoCompra.isValidated = true;
                 await infoCompra.save();
+                await vuelo.save();
                 console.log('Compra validada');
                 res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
             } else if (validationData.valid === false) {
