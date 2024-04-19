@@ -7,8 +7,9 @@ require('dotenv').config();
 class InfoComprasController {
     static async createInfoCompras(req, res) {
         try{
-            const { id } = req.params;
+            const { id, user_id } = req.params;
             console.log('idVuelo:', id);
+            console.log('user_id:', user_id);
             const fechaHoraActual = new Date();
             const datetime = fechaHoraActual.toISOString().slice(0, 19).replace('T', ' ');
             const vuelo = await Flight.findByPk(id);
@@ -22,7 +23,7 @@ class InfoComprasController {
             const infoCompra = await InfoCompras.create({
                 request_id: requestId,
                 flight_id: vuelo.id,
-                user_id: 1,
+                user_id: user_id,
                 group_id: 13,
                 departure_airport: vuelo.departure_airport_id,
                 arrival_airport: vuelo.arrival_airport_id,

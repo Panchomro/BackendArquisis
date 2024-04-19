@@ -13,7 +13,7 @@ const InfoCompras = sequelize.define('InfoCompras', {
         allowNull: false,
     },
     user_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
     },
     flight_id: {
