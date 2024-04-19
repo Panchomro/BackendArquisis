@@ -112,6 +112,7 @@ class InfoComprasController {
                 res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
             } else if (validationData.valid === false) {
                 infoCompra.isValidated = true;
+                await infoCompra.save();
                 console.log('Compra invalida');
                 res.status(200).json({ message: 'Validación no exitosa, compra rechazada' });
             }
@@ -127,11 +128,13 @@ class InfoComprasController {
 
     static async historialInfoCompras(req, res) {
         try {
-            const { user_id } = req.params.user_id;
+            const { userId } = req.params;
+            console.log('userId:', userId);
             const infoCompras = await InfoCompras.findAll({
-                where: { user_id: user_id }
+                where: { user_id: userId }
             });
-            res.status(200).json(infoCompras.rows);
+            console.log('infoCompras:', infoCompras);
+            res.status(200).json(infoCompras);
         } catch (error) {
             console.error('Error al buscar historial de InfoCompras:', error);
             res.status(500).json({ error: 'Error interno del servidor' });

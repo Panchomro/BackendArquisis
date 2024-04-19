@@ -7,7 +7,7 @@ router.post('/flights/:id/:user_id/buy', InfoComprasController.createInfoCompras
 
 router.post('/flights/validations/:request_id', InfoComprasController.manejarValidation);
 
-router.post('/flights/historial/:user_id', InfoComprasController.historialInfoCompras);
+router.get('/flights/historial/:userId', InfoComprasController.historialInfoCompras);
 
 
 module.exports = router;
