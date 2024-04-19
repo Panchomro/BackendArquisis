@@ -24,6 +24,7 @@ class InfoComprasController {
                 request_id: requestId,
                 flight_id: vuelo.id,
                 user_id: user_id,
+                airline_logo: vuelo.airline_logo,
                 group_id: 13,
                 departure_airport: vuelo.departure_airport_id,
                 arrival_airport: vuelo.arrival_airport_id,
@@ -31,6 +32,7 @@ class InfoComprasController {
                 datetime: datetime,
                 quantity: 90,
                 seller: 0,
+                isValidated: false,
                 valid: false,
             });
 
@@ -104,10 +106,12 @@ class InfoComprasController {
             if (validationData.valid === true) {
                 infoCompra.valid = validationData.valid;
                 infoCompra.quantity -= 1;
+                infoCompra.isValidated = true;
                 await infoCompra.save();
                 console.log('Compra validada');
                 res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
             } else if (validationData.valid === false) {
+                infoCompra.isValidated = true;
                 console.log('Compra invalida');
                 res.status(200).json({ message: 'Validación no exitosa, compra rechazada' });
             }
@@ -121,12 +125,15 @@ class InfoComprasController {
         }
     }
 
-    static async mostrarInfoCompras(req, res) {
+    static async historialInfoCompras(req, res) {
         try {
-            const infoCompras = await InfoCompras.findAll();
-            res.status(200).json(infoCompras);
+            const { user_id } = req.params.user_id;
+            const infoCompras = await InfoCompras.findAll({
+                where: { user_id: user_id }
+            });
+            res.status(200).json(infoCompras.rows);
         } catch (error) {
-            console.error('Error al buscar objetos InfoCompras:', error);
+            console.error('Error al buscar historial de InfoCompras:', error);
             res.status(500).json({ error: 'Error interno del servidor' });
         }
     }

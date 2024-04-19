@@ -16,6 +16,10 @@ const InfoCompras = sequelize.define('InfoCompras', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    airline_logo: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     flight_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -50,6 +54,10 @@ const InfoCompras = sequelize.define('InfoCompras', {
     },
     seller: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    isValidated: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
     },
     valid: {
