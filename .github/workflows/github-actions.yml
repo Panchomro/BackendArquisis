@@ -25,11 +25,11 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-      working-directory: ./src
+      working-directory: ./app/src
 
     - name: Lint with npm
       run: npm run lint
-      working-directory: ./src
+      working-directory: ./app/src
 
     - name: echo
       run: echo "Hello, world!"
