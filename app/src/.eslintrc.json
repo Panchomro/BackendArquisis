@@ -1,0 +1,38 @@
+{
+  "overrides": [
+    {
+      "files": [
+        "**/*.js"
+      ],
+      "parserOptions": {
+        "sourceType": "commonjs"
+      }
+    },
+    {
+      "files": [
+        "**/*.js"
+      ],
+      "parserOptions": {
+        "globals": {
+          "globals": {
+            "node": true
+          }
+        }
+      }
+    },
+    {
+      "files": [
+        "**/*.js"
+      ],
+      "extends": [
+        "airbnb-base"
+      ],
+      "rules": {
+        "no-console": "off",
+        "camelcase": "off",
+        "consistent-return": "off",
+        "prefer-const": "off"
+      }
+    }
+  ]
+}

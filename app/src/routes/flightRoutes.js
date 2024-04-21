@@ -9,5 +9,4 @@ router.get('/flights', FlightController.getFlights);
 
 router.get('/flights/:id', FlightController.getFlightById);
 
-
 module.exports = router;

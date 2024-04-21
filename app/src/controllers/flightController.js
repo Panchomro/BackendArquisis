@@ -1,18 +1,20 @@
-const Flight = require('../models/Flight');
 const { Op } = require('sequelize');
+const Flight = require('../models/Flight');
 
 class FlightController {
   static async createFlight(req, res) {
     try {
       // Obtener los datos del cuerpo de la solicitud MQTT
       const mqttData = req.body;
-  
+
       // Extraer la información de los vuelos y otros datos
-      const { flights, carbonEmission, price, currency, airlineLogo } = mqttData[0];
-  
+      const {
+        flights, carbonEmission, price, currency, airlineLogo,
+      } = mqttData[0];
+
       // Convertir la cadena JSON de vuelos en un objeto JavaScript
       const parsedFlights = JSON.parse(flights);
-  
+
       // Crear un documento de vuelo en la base de datos para cada vuelo
       const flightPromises = parsedFlights.map(async (flight) => {
         await Flight.create({
@@ -27,13 +29,13 @@ class FlightController {
           airline: flight.airline,
           airline_logo: flight.airline_logo,
           carbon_emissions: JSON.parse(carbonEmission).this_flight || null,
-          price: price,
-          currency: currency,
-          airlineLogo: airlineLogo,
-          quantity: 90
+          price,
+          currency,
+          airlineLogo,
+          quantity: 90,
         });
       });
-  
+
       // Esperar a que todas las promesas de creación de vuelos se resuelvan
       try {
         await Promise.all(flightPromises);
@@ -42,7 +44,7 @@ class FlightController {
         console.error('Error al esperar las promesas:', error);
         // Manejar el error según sea necesario
       }
-  
+
       // Enviar una respuesta de éxito
       res.status(201).json({ message: 'Vuelos creados exitosamente' });
     } catch (error) {
@@ -68,56 +70,57 @@ class FlightController {
 
   static async getFlights(req, res) {
     try {
-        // Obtener parámetros de consulta del URL
-        let { departure_airport_id, arrival_airport_id, departure_airport_time, page, count } = req.query;
-
+      // Obtener parámetros de consulta del URL
+      // eslint-disable-next-line prefer-const
+      let {
+        departure_airport_id, arrival_airport_id, departure_airport_time, page, count,
+      } = req.query;
         // Establecer valores predeterminados para la paginación
-        page = parseInt(page, 10) || 1; // Página predeterminada: 1
-        count = parseInt(count, 10) || 25; // Cantidad predeterminada por página: 25
+      page = parseInt(page, 10) || 1; // Página predeterminada: 1
+      count = parseInt(count, 10) || 25; // Cantidad predeterminada por página: 25
 
-        // Calcular el desplazamiento en función de la página y la cantidad por página
-        const offset = (page - 1) * count;
+      // Calcular el desplazamiento en función de la página y la cantidad por página
+      const offset = (page - 1) * count;
 
-        // Configurar las condiciones de búsqueda
-        const whereCondition = {};
+      // Configurar las condiciones de búsqueda
+      const whereCondition = {};
 
-        // Agregar condiciones de búsqueda si se proporcionan parámetros de consulta
-        if (departure_airport_id) {
-            whereCondition.departure_airport_id = departure_airport_id;
-        }
-        if (arrival_airport_id) {
-            whereCondition.arrival_airport_id = arrival_airport_id;
-        }
-        if (departure_airport_time) {
-            // Convertir la fecha a formato de fecha de JavaScript
-            const departureDate = new Date(departure_airport_time);
-            whereCondition.departure_airport_time = {
-                [Op.gte]: departureDate, // Búsqueda de vuelos después o en la fecha especificada
-            };
-        }
+      // Agregar condiciones de búsqueda si se proporcionan parámetros de consulta
+      if (departure_airport_id) {
+        whereCondition.departure_airport_id = departure_airport_id;
+      }
+      if (arrival_airport_id) {
+        whereCondition.arrival_airport_id = arrival_airport_id;
+      }
+      if (departure_airport_time) {
+        // Convertir la fecha a formato de fecha de JavaScript
+        const departureDate = new Date(departure_airport_time);
+        whereCondition.departure_airport_time = {
+          [Op.gte]: departureDate, // Búsqueda de vuelos después o en la fecha especificada
+        };
+      }
 
-        // Buscar vuelos en la base de datos con paginación
-        const flights = await Flight.findAndCountAll({
-            where: whereCondition,
-            limit: count, // Cantidad de vuelos por página
-            offset: offset // Desplazamiento para paginación
-        });
+      // Buscar vuelos en la base de datos con paginación
+      const flights = await Flight.findAndCountAll({
+        where: whereCondition,
+        limit: count, // Cantidad de vuelos por página
+        offset, // Desplazamiento para paginación
+      });
 
-        // Enviar vuelos encontrados como respuesta junto con información de paginación
-        console.log('Vuelos encontrados:', flights.rows);
-        res.status(200).json({
-            flights: flights.rows,
-            totalCount: flights.count,
-            totalPages: Math.ceil(flights.count / count), // Total de páginas
-            currentPage: page // Página actual
-        });
+      // Enviar vuelos encontrados como respuesta junto con información de paginación
+      console.log('Vuelos encontrados:', flights.rows);
+      res.status(200).json({
+        flights: flights.rows,
+        totalCount: flights.count,
+        totalPages: Math.ceil(flights.count / count), // Total de páginas
+        currentPage: page, // Página actual
+      });
     } catch (error) {
-        console.error('Error al buscar vuelos:', error);
-        // Enviar una respuesta de error si ocurre algún problema
-        res.status(500).json({ error: 'Error interno del servidor' });
+      console.error('Error al buscar vuelos:', error);
+      // Enviar una respuesta de error si ocurre algún problema
+      res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
 }
 
 module.exports = FlightController;
-

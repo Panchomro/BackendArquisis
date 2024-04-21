@@ -10,8 +10,7 @@ const InfoCompras = require('./models/InfoCompras');
 
 const app = express();
 
-
-const PORT = process.env.PORT;
+const { PORT } = process.env;
 
 // Middleware
 app.use(express.json());
@@ -19,7 +18,6 @@ app.use(cors());
 app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
 app.use(express.urlencoded({ extended: false }));
-
 
 async function syncDatabase() {
   try {
