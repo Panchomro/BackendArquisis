@@ -8,7 +8,7 @@ class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
       const { id, user_id } = req.params;
-      const { quantity } = req.body;
+      const { quantity, ip } = req.body;
       console.log('idVuelo:', id);
       console.log('user_id:', user_id);
       const fechaHoraActualUTC = new Date();
@@ -51,6 +51,7 @@ class InfoComprasController {
         seller: 0,
         isValidated: false,
         valid: false,
+        user_ip: ip,
       });
 
       console.log('infocompra:', infoCompra);

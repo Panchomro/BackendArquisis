@@ -64,6 +64,10 @@ const InfoCompras = sequelize.define('InfoCompras', {
     type: DataTypes.BOOLEAN,
     allowNull: false,
   },
+  user_ip: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
   timestamps: false,
   tableName: 'InfoCompras',
