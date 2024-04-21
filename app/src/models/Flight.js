@@ -1,6 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
+
 const sequelize = new Sequelize('postgres://panchomro:Arya1234@db:5432/e0arquisis');
-//const db = require('../db');
+// const db = require('../db');
 
 const Flight = sequelize.define('Flight', {
   id: {
@@ -63,7 +64,7 @@ const Flight = sequelize.define('Flight', {
   quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
-  }
+  },
 }, {
   timestamps: true,
   tableName: 'infoflights',

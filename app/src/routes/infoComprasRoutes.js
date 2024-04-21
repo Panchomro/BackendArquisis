@@ -9,5 +9,4 @@ router.post('/flights/validations/:request_id', InfoComprasController.manejarVal
 
 router.get('/flights/historial/:userId', InfoComprasController.historialInfoCompras);
 
-
 module.exports = router;
