@@ -1,0 +1,1 @@
+Para crear continuous implementations, se decidió utilizar Github actions, dada la flexibilidad del archivo, creando un workflow mas seguro asegurando en cada commit que el código nuevo es checkeado para corregir errores y probar si es seguro hacer un pull o un commit a main y a dev. Se corren Instalar nmp, corriendo las dependencias y chequea con un eslint a todos los archivos.

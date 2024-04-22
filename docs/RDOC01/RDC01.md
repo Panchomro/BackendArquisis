@@ -1,0 +1,5 @@
+Partiendo desde los usuarios conectan a la frontend de la App Web alojadas en S3, ahí estos pueden solicitar recursos como los vuelos, compra de tickets y demás.
+Cada vez que se solicita un recurso esta request pasa por el API gateway alojado en AWS y verifica que las resquest estén bien hechas para pasarselas al backend. También es importante mencionar que hay recursos que son restringidos a usuarios registrados, por lo que contamos con un servicio de autorización auth0 que produce JWT y los manda en headers al backend a través del mismo API gateway para verificar que el usuario está autorizado al acceso del recurso.
+Antes de que las request pasen al backend está el componente Load Balancer de ngnx que distribuirá el tráfico de manera eficiente al servidor EC2 del backend.
+Luego las request pasan a la api del servidor que entrega información sacada de la bdd 'Flights' o también puede ingresar información a las bdd 'Customer'. 
+Por otra parte, el servidor cuenta con un servicio MQTT, que es de arquitectura Pub-Sub, el cual envia información a la api que crea los vuelos en la BDD y también es utilizada para validar la compra de los vuelos.
