@@ -7,7 +7,9 @@ require('dotenv').config();
 class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
-      const { quantity, ip, userId, flightId } = req.body;
+      const {
+        quantity, ip, userId, flightId,
+      } = req.body;
       console.log('idVuelo:', flightId);
       console.log('user_id:', userId);
       const fechaHoraActualUTC = new Date();
@@ -46,7 +48,7 @@ class InfoComprasController {
         arrival_airport: vuelo.arrival_airport_id,
         departure_time: departureTimeChileno,
         datetime: datetimeChileno,
-        quantity: quantity,
+        quantity,
         seller: 0,
         isValidated: false,
         valid: false,
