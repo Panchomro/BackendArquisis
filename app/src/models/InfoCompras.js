@@ -64,6 +64,10 @@ const InfoCompras = sequelize.define('InfoCompras', {
     type: DataTypes.BOOLEAN,
     allowNull: false,
   },
+  totalPrice: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   user_ip: {
     type: DataTypes.STRING,
     allowNull: false,
