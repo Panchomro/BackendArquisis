@@ -7,14 +7,13 @@ require('dotenv').config();
 class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
-      const { id, user_id } = req.params;
-      const { quantity, ip } = req.body;
-      console.log('idVuelo:', id);
-      console.log('user_id:', user_id);
+      const { quantity, ip, userId, flightId } = req.body;
+      console.log('idVuelo:', flightId);
+      console.log('user_id:', userId);
       const fechaHoraActualUTC = new Date();
       fechaHoraActualUTC.setHours(fechaHoraActualUTC.getHours() - 4);
       const datetimeChileno = fechaHoraActualUTC.toISOString().slice(0, 19).replace('T', ' ');
-      const vuelo = await Flight.findByPk(id);
+      const vuelo = await Flight.findByPk(flightId);
 
       const departureTimeCL = vuelo.departure_airport_time;
       departureTimeCL.setHours(departureTimeCL.getHours() - 4);
@@ -40,14 +39,14 @@ class InfoComprasController {
       const infoCompra = await InfoCompras.create({
         request_id: requestId,
         flight_id: vuelo.id,
-        user_id,
+        user_id: userId,
         airline_logo: vuelo.airline_logo,
         group_id: '13',
         departure_airport: vuelo.departure_airport_id,
         arrival_airport: vuelo.arrival_airport_id,
         departure_time: departureTimeChileno,
         datetime: datetimeChileno,
-        quantity,
+        quantity: quantity,
         seller: 0,
         isValidated: false,
         valid: false,
@@ -147,7 +146,7 @@ class InfoComprasController {
 
   static async historialInfoCompras(req, res) {
     try {
-      const { userId } = req.params;
+      const { userId } = req.query;
       console.log('userId:', userId);
       const infoCompras = await InfoCompras.findAll({
         where: { user_id: userId },
