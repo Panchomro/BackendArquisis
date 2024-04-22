@@ -50,7 +50,7 @@ class InfoComprasController {
         departure_time: departureTimeChileno,
         datetime: datetimeChileno,
         totalPrice: priceTotal,
-        quantity: quantity,
+        quantity,
         seller: 0,
         isValidated: false,
         valid: false,
