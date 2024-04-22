@@ -3,10 +3,10 @@ const InfoComprasController = require('../controllers/InfoComprasController');
 
 const router = express.Router();
 
-router.post('/flights/:id/:user_id/buy', InfoComprasController.createInfoCompras);
+router.post('/buy/:id/:user_id', InfoComprasController.createInfoCompras);
 
 router.post('/flights/validations/:request_id', InfoComprasController.manejarValidation);
 
-router.get('/flights/historial/:userId', InfoComprasController.historialInfoCompras);
+router.get('/historial/:userId', InfoComprasController.historialInfoCompras);
 
 module.exports = router;
