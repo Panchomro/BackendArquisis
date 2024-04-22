@@ -1,24 +1,28 @@
 require('dotenv').config();
-
+const cors = require('cors');
 const express = require('express');
 
 const flightRoutes = require('./routes/flightRoutes');
+const infoComprasRoutes = require('./routes/infoComprasRoutes');
 
 const Flight = require('./models/Flight');
+const InfoCompras = require('./models/InfoCompras');
 
 const app = express();
 
-const PORT = process.env.PORT;
+const { PORT } = process.env;
 
 // Middleware
 app.use(express.json());
+app.use(cors());
 app.use('/', flightRoutes);
+app.use('/', infoComprasRoutes);
 app.use(express.urlencoded({ extended: false }));
-
 
 async function syncDatabase() {
   try {
     await Flight.sync({ force: false });
+    await InfoCompras.sync({ force: false });
     console.log('Modelo sincronizado con la base de datos');
   } catch (error) {
     console.error('Error al sincronizar el modelo con la base de datos:', error);

@@ -1,47 +1,18 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
 const sequelize = new Sequelize('postgres://panchomro:Arya1234@db:5432/e0arquisis');
-// const db = require('../db');
 
-const Flight = sequelize.define('Flight', {
+const InfoCompras = sequelize.define('InfoCompras', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  departure_airport_name: {
-    type: DataTypes.STRING,
+  request_id: {
+    type: DataTypes.UUID,
     allowNull: false,
   },
-  departure_airport_id: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  departure_airport_time: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  arrival_airport_name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  arrival_airport_id: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  arrival_airport_time: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  duration: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  airplane: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  airline: {
+  user_id: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -49,25 +20,57 @@ const Flight = sequelize.define('Flight', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  carbon_emissions: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  price: {
+  flight_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  currency: {
+  group_id: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  departure_airport: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  arrival_airport: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  departure_time: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  datetime: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  deposit_token: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  seller: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  isValidated: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
+  valid: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
+  user_ip: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
-  timestamps: true,
-  tableName: 'infoflights',
+  timestamps: false,
+  tableName: 'InfoCompras',
 });
 
-module.exports = Flight;
+module.exports = InfoCompras;
