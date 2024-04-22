@@ -37,6 +37,7 @@ class InfoComprasController {
       }
 
       const requestId = uuid();
+      const priceTotal = vuelo.price * quantity;
 
       const infoCompra = await InfoCompras.create({
         request_id: requestId,
@@ -48,6 +49,7 @@ class InfoComprasController {
         arrival_airport: vuelo.arrival_airport_id,
         departure_time: departureTimeChileno,
         datetime: datetimeChileno,
+        totalPrice: priceTotal,
         quantity,
         seller: 0,
         isValidated: false,
