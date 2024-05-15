@@ -7,64 +7,77 @@ require('dotenv').config();
 class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
-      const {
-        quantity, ip, userId, flightId,
-      } = req.body;
-      console.log('idVuelo:', flightId);
-      console.log('user_id:', userId);
-      const fechaHoraActualUTC = new Date();
-      fechaHoraActualUTC.setHours(fechaHoraActualUTC.getHours() - 4);
-      const datetimeChileno = fechaHoraActualUTC.toISOString().slice(0, 19).replace('T', ' ');
-      const vuelo = await Flight.findByPk(flightId);
+        // Obtener los parámetros de la consulta (query parameters)
+        const { quantity, ip, flightId } = req.query;
+        const userId = req.auth.sub;
 
-      const departureTimeCL = vuelo.departure_airport_time;
-      departureTimeCL.setHours(departureTimeCL.getHours() - 4);
+        console.log('idVuelo:', flightId);
+        console.log('user_id:', userId);
 
-      // Obtener componentes de fecha y hora
-      const year = departureTimeCL.getFullYear();
-      const month = String(departureTimeCL.getMonth() + 1).padStart(2, '0'); // Sumar 1 al mes porque los meses en JavaScript van de 0 a 11
-      const day = String(departureTimeCL.getDate()).padStart(2, '0');
-      const hours = String(departureTimeCL.getHours()).padStart(2, '0');
-      const minutes = String(departureTimeCL.getMinutes()).padStart(2, '0');
+        // Obtener la fecha y hora actual en UTC
+        const fechaHoraActualUTC = new Date();
+        fechaHoraActualUTC.setHours(fechaHoraActualUTC.getHours() - 4);
+        const datetimeChileno = fechaHoraActualUTC.toISOString().slice(0, 19).replace('T', ' ');
 
-      // Construir la cadena de fecha y hora
-      const departureTimeChileno = `${year}-${month}-${day} ${hours}:${minutes}`;
+        // Buscar el vuelo por su ID
+        const vuelo = await Flight.findByPk(flightId);
+        if (!vuelo) {
+            throw new Error('Vuelo no encontrado');
+        }
 
-      console.log(departureTimeChileno);
+        // Ajustar la hora de salida del vuelo
+        const departureTimeCL = new Date(vuelo.departure_airport_time);
+        departureTimeCL.setHours(departureTimeCL.getHours() - 4);
 
-      if (!vuelo) {
-        throw new Error('Vuelo no encontrado');
-      }
+        // Construir la cadena de fecha y hora de salida
+        const year = departureTimeCL.getFullYear();
+        const month = String(departureTimeCL.getMonth() + 1).padStart(2, '0');
+        const day = String(departureTimeCL.getDate()).padStart(2, '0');
+        const hours = String(departureTimeCL.getHours()).padStart(2, '0');
+        const minutes = String(departureTimeCL.getMinutes()).padStart(2, '0');
+        const departureTimeChileno = `${year}-${month}-${day} ${hours}:${minutes}`;
 
-      const requestId = uuid();
-      const priceTotal = vuelo.price * quantity;
+        console.log(departureTimeChileno);
 
-      const infoCompra = await InfoCompras.create({
-        request_id: requestId,
-        flight_id: vuelo.id,
-        user_id: userId,
-        airline_logo: vuelo.airline_logo,
-        group_id: '13',
-        departure_airport: vuelo.departure_airport_id,
-        arrival_airport: vuelo.arrival_airport_id,
-        departure_time: departureTimeChileno,
-        datetime: datetimeChileno,
-        totalPrice: priceTotal,
-        quantity,
-        seller: 0,
-        isValidated: false,
-        valid: false,
-        user_ip: ip,
-      });
+        // Crear un ID de solicitud único
+        const requestId = uuid();
 
-      console.log('infocompra:', infoCompra);
-      const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
-      InfoComprasController.enviarCompraMqtt(jsonData);
+        // Calcular el precio total
+        const priceTotal = vuelo.price * quantity;
+
+        // Crear el registro de compra
+        const infoCompra = await InfoCompras.create({
+            request_id: requestId,
+            flight_id: vuelo.id,
+            user_id: userId,
+            airline_logo: vuelo.airline_logo,
+            group_id: '13',
+            departure_airport: vuelo.departure_airport_id,
+            arrival_airport: vuelo.arrival_airport_id,
+            departure_time: departureTimeChileno,
+            datetime: datetimeChileno,
+            totalPrice: priceTotal,
+            quantity,
+            seller: 0,
+            isValidated: false,
+            valid: false,
+            user_ip: ip,
+        });
+
+        console.log('infocompra:', infoCompra);
+
+        // Enviar los datos de la compra a través de MQTT
+        const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
+        InfoComprasController.enviarCompraMqtt(jsonData);
+
+        // Enviar una respuesta exitosa
+        res.status(200).json({ message: 'Compra creada exitosamente' });
     } catch (error) {
-      console.error('Error al crear compra desde MQTT:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+        console.error('Error al crear compra desde MQTT:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
+
 
   static async findCompraEnviarJSON(id, quantity) {
     console.log('idCompra:', id);
@@ -150,18 +163,23 @@ class InfoComprasController {
 
   static async historialInfoCompras(req, res) {
     try {
-      const { userId } = req.query;
+      // Acceder al userId desde el JWT decodificado
+      console.log('req.auth:', req);
+      const userId = req.auth.sub;
       console.log('userId:', userId);
+  
       const infoCompras = await InfoCompras.findAll({
         where: { user_id: userId },
       });
       console.log('infoCompras:', infoCompras);
+  
       res.status(200).json(infoCompras);
     } catch (error) {
       console.error('Error al buscar historial de InfoCompras:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
+  
 }
 
 module.exports = InfoComprasController;
