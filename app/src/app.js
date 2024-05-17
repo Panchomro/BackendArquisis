@@ -20,19 +20,6 @@ app.use(cors());
 app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
 app.use(express.urlencoded({ extended: false }));
-app.use((err, req, res, next) => {
-  if (err.name === 'UnauthorizedError') {
-      console.error('Error de autorización:', err);
-      res.status(401).send('Token inválido');
-  } else {
-      next(err);
-  }
-});
-
-app.use((req, res, next) => {
-  console.log('Token decodificado:', req.user);
-  next();
-});
 
 async function syncDatabase() {
   try {
