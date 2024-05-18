@@ -164,7 +164,6 @@ class InfoComprasController {
   static async historialInfoCompras(req, res) {
     try {
       // Acceder al userId desde el JWT decodificado
-      console.log('req.auth:', req);
       const userId = req.auth.sub;
       console.log('userId:', userId);
   
