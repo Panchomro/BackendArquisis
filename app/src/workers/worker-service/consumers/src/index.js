@@ -22,12 +22,12 @@ async function fetchLocationFromAdress(address) {
   }
 }
 
-async function fetchLast20Entries(departureAirportTime, departureAirportName) {
+async function fetchLast20Entries(departureAirportTime, departureAirportId) {
   try {
     const response = await axios.get(`${process.env.BAKEND_URL}/flights/forWorkers`,{
       params: {
         departure_airport_time: departureAirportTime,
-        departure_airport_name: departureAirportName,
+        departure_airport_id: departureAirportId,
       },
     });
     return response.data.flights;
@@ -47,7 +47,7 @@ async function processJob(job) {
     console.log("Failed to fetch latitude and longitude for IP:", ip);
   }
   const flightBought = job.data.flightBought;
-  const entries = await fetchLast20Entries(flightBought.departure_airport_time, flightBought.arrival_airport_id);
+  const entries = await fetchLast20Entries(flightBought.arrival_airport_time, flightBought.arrival_airport_id);
   if (!entries) {
     console.log("Failed to fetch last 20 entries");
   }
@@ -75,7 +75,7 @@ async function processJob(job) {
         }
       }
     }
-    
+
 
     //https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&amp;key=YOUR_API_KEY
 
