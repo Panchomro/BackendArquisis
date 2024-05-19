@@ -5,6 +5,7 @@ const checkJwt = require('./middlewares/auth');
 
 const flightRoutes = require('./routes/flightRoutes');
 const infoComprasRoutes = require('./routes/infoComprasRoutes');
+const webpayRoutes = require('./routes/webpayRoutes');
 
 const Flight = require('./models/Flight');
 const InfoCompras = require('./models/InfoCompras');
@@ -19,6 +20,8 @@ app.use(cors());
 
 app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
+app.use('/', webpayRoutes);z
+// app.use('/', paymentRoutes);
 app.use(express.urlencoded({ extended: false }));
 
 async function syncDatabase() {
