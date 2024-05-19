@@ -8,7 +8,7 @@ class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
         // Obtener los parámetros de la consulta (query parameters)
-        const { quantity, ip, flightId } = req.query;
+        const { quantity, ip, flightId } = req.body;
         const userId = req.auth.sub;
 
         console.log('idVuelo:', flightId);
@@ -36,8 +36,6 @@ class InfoComprasController {
         const hours = String(departureTimeCL.getHours()).padStart(2, '0');
         const minutes = String(departureTimeCL.getMinutes()).padStart(2, '0');
         const departureTimeChileno = `${year}-${month}-${day} ${hours}:${minutes}`;
-
-        console.log(departureTimeChileno);
 
         // Crear un ID de solicitud único
         const requestId = uuid();
@@ -83,8 +81,6 @@ class InfoComprasController {
     console.log('idCompra:', id);
     const infoCompra = await InfoCompras.findByPk(id);
 
-    console.log('infoCompra Encontrada:', infoCompra);
-
     const jsonData = {
       request_id: infoCompra.request_id,
       group_id: infoCompra.group_id,
@@ -128,7 +124,6 @@ class InfoComprasController {
       console.log('request_id:', request_id);
       console.log('req.body:', req.body);
       const validationData = req.body;
-      console.log('validationData:', validationData);
       const infoCompra = await InfoCompras.findOne({
         where: { request_id },
       });
