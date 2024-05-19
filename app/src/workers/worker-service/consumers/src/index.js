@@ -1,69 +1,112 @@
 const { Worker, Job } = require("bullmq");
+const axios = require("axios");
+require("dotenv").config();
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+async function fetchLatLonFromIP(ip) {
+  try {
+    const response = await axios.get(`http://ip-api.com/json/${ip}?fields=lat,lon`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching latitude and longitude from IP:", error);
+    return null;
+  }
 }
 
-/**
- *
- * @param {Job} job
- */
-async function processor(job) {
+async function fetchLocationFromAdress(address) {
+  try {
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching latitude and longitude from IP:", error);
+    return null;
+  }
+}
+
+async function fetchLast20Entries(departureAirportTime, departureAirportName) {
+  try {
+    const response = await axios.get(`${process.env.BAKEND_URL}/flights/forWorkers`,{
+      params: {
+        departure_airport_time: departureAirportTime,
+        departure_airport_name: departureAirportName,
+      },
+    });
+    return response.data.flights;
+  } catch (error) {
+    console.error("Error fetching last 20 entries:", error);
+    return null;
+  }
+}
+
+// Function to simulate processing of a job
+async function processJob(job) {
+  // Fetch last 20 entries from the database
+  
+  const ip = job.data.ip;
+  const location = await fetchLatLonFromIP(ip);
+  if (!location) {
+    console.log("Failed to fetch latitude and longitude for IP:", ip);
+  }
+  const flightBought = job.data.flightBought;
+  const entries = await fetchLast20Entries(flightBought.departure_airport_time, flightBought.arrival_airport_id);
+  if (!entries) {
+    console.log("Failed to fetch last 20 entries");
+  }
+  let array_pond = [];
+  let array_entries = [];
+  for (let entry of entries) {
+    const address = await fetchLocationFromAdress(entry.departure_airport_name);
+    if (!address) {
+      console.log("Failed to fetch address for entry:", entry);
+      continue;
+    }
+    const lat = address.results[0].geometry.location.lat;
+    const lon = address.results[0].geometry.location.lon;
+    const ponderator = (Math.sqrt(( location.lat-lat) ** 2 + (location.lon - lon) ** 2))/entry.price;
+    if (length(array_pond) < 3){
+      array_pond.push(ponderator);
+      array_entries.push(entry);
+    }
+    else{
+      for (let i = 0; i < 3; i++){
+        if (array_pond[i] > ponderator){
+          array_pond[i] = ponderator;
+          array_entries[i] = entry;
+          break;
+        }
+      }
+    }
+    
+
+    //https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&amp;key=YOUR_API_KEY
+
+  }
+  
+  // Log the fetched entries
+  console.log("Last 20 entries:", entries);
+
   // Optionally report some progress
-  await sleep(2000);
   await job.updateProgress(42);
 
   // Optionally sending an object as progress
-  await job.updateProgress({ foo: "bar" });
+  await job.updateProgress({ entries });
 
-  // Do something with job
-  if (Math.random() <= 0.3) {
-    // To give a posibility to the job to fail and handle that job fail
-    throw Error("The Audio could not be decoded");
-  }
-  return "Audio decodified";
+  return "Data fetched successfully";
 }
 
-const connection = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD,
-};
+// Create a worker instance for the "audio transcoding" queue
+const worker = new Worker("audio transcoding", processJob);
 
-const worker = new Worker("audio transcoding", processor, {
-  autorun: false,
-  connection,
-}); // Specify Redis connection using object
+// Log when the worker starts listening to jobs
+console.log("Worker is listening to jobs...");
 
-console.log("Worker Listening to Jobs...");
-
-// Callback on completed jobs
-worker.on("completed", (job, returnvalue) => {
-  console.log(`Worker completed job ${job.id} with result ${returnvalue}`);
+// Listen for completed jobs
+worker.on("completed", (job) => {
+  console.log(`Job ${job.id} completed successfully`);
 });
 
-// Callback on failed jobs
-worker.on("failed", (job, error) => {
-  console.log(`Worker completed job ${job.id} with error ${error}`);
-  // Do something with the return value.
+// Listen for failed jobs
+worker.on("failed", (job, err) => {
+  console.log(`Job ${job.id} failed with error:`, err);
 });
-
-// Callback on error of the worker
-worker.on("error", (err) => {
-  // log the error
-  console.error(err);
-});
-
-worker.run();
-
-// To handle gracefull shutdown of consummers
-async function shutdown() {
-  console.log("Received SIGTERM signal. Gracefully shutting down...");
-
-  // Perform cleanup or shutdown operations here
-  await worker.close();
-  // Once cleanup is complete, exit the process
-  process.exit(0);
-}
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);

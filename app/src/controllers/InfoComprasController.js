@@ -178,7 +178,42 @@ class InfoComprasController {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
+
   
+  static async getFlightsForWorkers(req, res) {
+    try {
+      let {departure_airport_name, departure_airport_time} = req.query;
+      
+      if (!departure_airport_name || !departure_airport_time) {
+        return res.status(400).json({ error: 'Faltan parámetros' });
+      }
+      
+      const departureDate = new Date(departure_airport_time);
+      const oneWeekLater = new Date(departureDate);
+      oneWeekLater.setDate(departureDate.getDate() + 7);
+
+      const flights = await Flight.findAll({
+        where: {
+          departure_airport_name,
+          departure_airport_time: {
+            [Op.between]: [departureDate, oneWeekLater],
+          },
+        },
+        order: [['departure_airport_time', 'ASC']], // Order by departure_airport_time ascending
+        limit: 20,
+      });
+      console.log('Vuelos encontrados:', flights);
+      res.status(200).json({
+        flights,
+        totalCount: flights.length,
+      });
+    } catch (error) {
+      console.error('Error al buscar vuelos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
 }
+
+
 
 module.exports = InfoComprasController;
