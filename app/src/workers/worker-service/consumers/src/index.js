@@ -73,7 +73,7 @@ async function processJob(job) {
   }
   
   // Log the fetched entries
-  console.log("Last 20 entries:", entries);
+  console.log("Last 20 entries:", flightsForWorkers);
 
   // Save recommendations to backend
   try {
@@ -89,7 +89,7 @@ async function processJob(job) {
   await job.updateProgress(42);
 
   // Optionally sending an object as progress
-  await job.updateProgress({ entries });
+  await job.updateProgress({ flightsForWorkers });
 
   return "Data fetched successfully";
 }
