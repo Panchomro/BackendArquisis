@@ -22,38 +22,28 @@ async function fetchLocationFromAdress(address) {
   }
 }
 
-async function fetchLast20Entries(departureAirportTime, departureAirportId) {
-  try {
-    const response = await axios.get(`${process.env.BAKEND_URL}/flights/forWorkers`,{
-      params: {
-        departure_airport_time: departureAirportTime,
-        departure_airport_id: departureAirportId,
-      },
-    });
-    return response.data.flights;
-  } catch (error) {
-    console.error("Error fetching last 20 entries:", error);
-    return null;
-  }
-}
 
 // Function to simulate processing of a job
 async function processJob(job) {
   // Fetch last 20 entries from the database
-  
-  const ip = job.data.ip;
-  const location = await fetchLatLonFromIP(ip);
+
+  const { user_ip, flightData, flightsForWorkers } = job.data;
+
+  // const ip = job.data.user_ip;
+  //get location from ip
+  const location = await fetchLatLonFromIP(user_ip);
   if (!location) {
     console.log("Failed to fetch latitude and longitude for IP:", ip);
   }
-  const flightBought = job.data.flightBought;
-  const entries = await fetchLast20Entries(flightBought.arrival_airport_time, flightBought.arrival_airport_id);
-  if (!entries) {
-    console.log("Failed to fetch last 20 entries");
-  }
+  // const flightBought = job.data.flightBought;
+  // const entries = await fetchLast20Entries(flightBought.arrival_airport_time, flightBought.arrival_airport_id);
+  // if (!entries) {
+  //   console.log("Failed to fetch last 20 entries");
+  // }
+  // Calculate top 3 recommendations
   let array_pond = [];
   let array_entries = [];
-  for (let entry of entries) {
+  for (let entry of flightsForWorkers) {
     const address = await fetchLocationFromAdress(entry.departure_airport_name);
     if (!address) {
       console.log("Failed to fetch address for entry:", entry);
@@ -68,13 +58,14 @@ async function processJob(job) {
     }
     else{
       for (let i = 0; i < 3; i++){
-        if (array_pond[i] > ponderator){
+        if (array_pond[i] < ponderator){
           array_pond[i] = ponderator;
           array_entries[i] = entry;
           break;
         }
       }
     }
+    
 
 
     //https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&amp;key=YOUR_API_KEY
@@ -84,6 +75,16 @@ async function processJob(job) {
   // Log the fetched entries
   console.log("Last 20 entries:", entries);
 
+  // Save recommendations to backend
+  try {
+    await axios.post(`${process.env.BACKEND_URL}/recommendations`, {
+      user_ip: ip,
+      recommendations: array_entries.slice(0, 3),
+    });
+    console.log("Recommendations saved to backend");
+  } catch (error) {
+    console.error("Error saving recommendations to backend:", error);
+  }
   // Optionally report some progress
   await job.updateProgress(42);
 
@@ -94,7 +95,13 @@ async function processJob(job) {
 }
 
 // Create a worker instance for the "audio transcoding" queue
-const worker = new Worker("audio transcoding", processJob);
+const worker = new Worker("flight-queue", processJob, {
+  connection: {
+    host: "localhost",
+    port: 6379,
+  },
+
+});
 
 // Log when the worker starts listening to jobs
 console.log("Worker is listening to jobs...");

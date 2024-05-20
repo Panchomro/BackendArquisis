@@ -3,6 +3,14 @@ const uuid = require('uuid-random');
 const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
 require('dotenv').config();
+const Queue = require('bull');
+const flightQueue = new Queue('flight-queue', {
+  redis: {
+    host: 'redis',
+    port: 6379,
+  },
+});
+
 
 class InfoComprasController {
   static async createInfoCompras(req, res) {
@@ -147,6 +155,17 @@ class InfoComprasController {
         await vuelo.save();
         console.log('Compra validada');
         res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
+        //Una vez confirmada la compra se envía la información a la cola de RabbitMQ con el ip y la información de la compra
+        try {
+          await axios.post(`${process.env.PRODUCER_URL}/produce`, {
+            user_ip: infoCompra.user_ip,
+            flight_id: vuelo.id,
+          });
+          console.log('Información enviada al productor');
+        } catch (error) {
+          console.error('Error al enviar la información al productor:', error);
+        }
+        // });
       } else if (validationData.valid === false) {
         infoCompra.isValidated = true;
         await infoCompra.save();
@@ -179,7 +198,7 @@ class InfoComprasController {
     }
   }
 
-  
+  // Método para obtener los proximos 20 vuelos que se envían a los workers para su procesamiento
   static async getFlightsForWorkers(req, res) {
     try {
       let {departure_airport_name, departure_airport_time} = req.query;
