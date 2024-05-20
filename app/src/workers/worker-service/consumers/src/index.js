@@ -27,19 +27,15 @@ async function fetchLocationFromAdress(address) {
 async function processJob(job) {
   // Fetch last 20 entries from the database
 
-  const { user_ip, flightData, flightsForWorkers } = job.data;
+  const { user_ip, user_id, flightData, flightsForWorkers } = job.data;
 
-  // const ip = job.data.user_ip;
+  
   //get location from ip
   const location = await fetchLatLonFromIP(user_ip);
   if (!location) {
     console.log("Failed to fetch latitude and longitude for IP:", ip);
   }
-  // const flightBought = job.data.flightBought;
-  // const entries = await fetchLast20Entries(flightBought.arrival_airport_time, flightBought.arrival_airport_id);
-  // if (!entries) {
-  //   console.log("Failed to fetch last 20 entries");
-  // }
+  
   // Calculate top 3 recommendations
   let array_pond = [];
   let array_entries = [];
@@ -64,12 +60,9 @@ async function processJob(job) {
           break;
         }
       }
-    }
+    } 
     
-
-
     //https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&amp;key=YOUR_API_KEY
-
   }
   
   // Log the fetched entries
@@ -77,8 +70,9 @@ async function processJob(job) {
 
   // Save recommendations to backend
   try {
-    await axios.post(`${process.env.BACKEND_URL}/recommendations`, {
+    await axios.post(`${process.env.PORT}/recommendations`, {
       user_ip: ip,
+      user_id: user_id,
       recommendations: array_entries.slice(0, 3),
     });
     console.log("Recommendations saved to backend");
@@ -91,7 +85,7 @@ async function processJob(job) {
   // Optionally sending an object as progress
   await job.updateProgress({ flightsForWorkers });
 
-  return "Data fetched successfully";
+  return { recommendations: array_entries.slice(0, 3) };
 }
 
 // Create a worker instance for the "audio transcoding" queue
@@ -107,8 +101,11 @@ const worker = new Worker("flight-queue", processJob, {
 console.log("Worker is listening to jobs...");
 
 // Listen for completed jobs
-worker.on("completed", (job) => {
+worker.on("completed", (job, returnvalue) => {
   console.log(`Job ${job.id} completed successfully`);
+  console.log("Recommendations:", returnvalue.recommendations);
+
+
 });
 
 // Listen for failed jobs

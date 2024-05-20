@@ -8,6 +8,10 @@ const Recommendation = sequelize.define('Recommendation', {
         autoIncrement: true,
         primaryKey: true,
     },
+    user_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     user_ip: {
         type: DataTypes.STRING,
         allowNull: false,
