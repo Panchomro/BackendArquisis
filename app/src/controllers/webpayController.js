@@ -2,7 +2,7 @@ const { WebpayPlus } = require('transbank-sdk');
 const { Options, IntegrationApiKeys, Environment, IntegrationCommerceCodes } = require('transbank-sdk');
 const Transaction = require('transbank-sdk/dist/es5/transbank/webpay/webpay_plus/transaction');
 const Flight = require('../models/Flight'); // Importa el modelo de vuelo
-const uuid = require('uuid-random');
+const shortUUID = require('short-uuid');
 
 class WebpayController {
   static async createTransaction(req, res) {
@@ -13,15 +13,15 @@ class WebpayController {
       console.log('idVuelo:', flightId);
       console.log('user_id:', userId);
 
-    
+      const translator = shortUUID();
+      const buyOrder = translator.new();
+
       const vuelo = await Flight.findByPk(flightId);
       if (!vuelo) {
         throw new Error('Vuelo no encontrado');
       }
 
       const amount = vuelo.price * quantity;
-
-      const buyOrder = uuid();
 
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
       const trx = await tx.create(buyOrder, ip, amount, `http://localhost:3000/confirm-transaction/${flightId}/${userId}/${quantity}/${ip}`);
