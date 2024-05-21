@@ -44,10 +44,7 @@ services:
     
 
   mqtt:
-    image: mqtt
-    build:
-      context: ./ # The path in the machine that have the files, in this case root
-      dockerfile: ./mqtt.Dockerfile # The name of the Dockerfile definition
+    image: public.ecr.aws/m6b2c6w5/flight-api:latest
     container_name: mqtt
     # restart: unless-stopped
     depends_on:
