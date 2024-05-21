@@ -3,7 +3,7 @@ os: linux
 files:
   # Que archivos se copiaran en la instancia
   # https://docs.aws.amazon.com/codedeploy/latest/userguide/tutorials-on-premises-instance-2-create-sample-revision.html
-  - source: ./docker-compose.production.yml
+  - source: ./app/src/docker-compose.production.yml
     # Carpeta donde lo vamos a dejar
     destination: /home/ubuntu/
   - source: scripts

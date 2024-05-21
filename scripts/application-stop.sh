@@ -1,2 +1,2 @@
 echo "Stop aplication"
-docker-compose --file docker-compose.production.yml down
+# docker-compose --file docker-compose.production.yml down

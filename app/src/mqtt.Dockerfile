@@ -5,11 +5,11 @@ FROM node:latest
 WORKDIR /
 
 # Copiar el archivo package.json y package-lock.json
-COPY package*.json ./
+COPY /package*.json ./
 
 RUN npm install
 
-COPY mqtt.js ./
+COPY /mqtt.js ./
 
 COPY . .
 
