@@ -1,11 +1,22 @@
 version: '3'
 services:
-  api:
+  app:
     image: public.ecr.aws/m6b2c6w5/flight-api:latest
     ports:
       - 3000:3000
+    depends_on:
+      - db
     environment:
-      - PORT-3000
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_NAME: ${DB_NAME}
+      DATABASE_PORT: ${DB_PORT}
+      DATABASE_HOST: ${DB_HOST}
+      PORT: ${PORT}
+      BROKER_HOST: ${BROKER_HOST}
+      BROKER_PORT: ${BROKER_PORT}
+      BROKER_USER: ${BROKER_USER}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
   
   db:
     image: postgres # Cambia "nombre_imagen:tag" al nombre y etiqueta de tu imagen Docker
