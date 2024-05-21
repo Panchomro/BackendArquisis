@@ -27,7 +27,13 @@ class RecommendationController{
         const { user_id } = req.params;
 
         // Obtén las recomendaciones de la base de datos
-        const recommendations = await Recommendations.findOne({ where: { user_id } });
+        // Obtén las recomendaciones de la base de datos
+        const recommendations = await Recommendations.findAll({
+            where: { user_id },
+            order: [['createdAt', 'DESC']], // Ordenar por fecha de creación, de más reciente a más antiguo
+            limit: 3, // Limitar los resultados a los 3 más recientes
+        });
+        
 
         if (!recommendations) {
             return res.status(404).json({ error: 'No recommendations found' });

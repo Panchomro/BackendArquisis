@@ -88,11 +88,12 @@ async function processJob(job) {
   return { recommendations: array_entries.slice(0, 3) };
 }
 
-// Create a worker instance for the "audio transcoding" queue
+// Create a worker instance
 const worker = new Worker("flight-queue", processJob, {
   connection: {
-    host: "localhost",
-    port: 6379,
+    host: process.env.REDIS_HOST || 3002,
+    port: process.env.REDIS_PORT || 6379,
+    password: process.env.REDIS_PASSWORD,
   },
 
 });
