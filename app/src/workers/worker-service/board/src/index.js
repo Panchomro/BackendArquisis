@@ -12,7 +12,7 @@ const queueMQ = new Queue("audio transcoding", {
   },
 }); // Specify Redis connection using object);
 
-const serverAdapter = new ExpressAdapter();
+const serverAdapter = new ExpressAdapter();   
 serverAdapter.setBasePath("/admin/queues");
 
 const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
