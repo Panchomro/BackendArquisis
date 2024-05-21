@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "bullmq": "^3.13.4"
+    "axios": "^1.7.2",
+    "bullmq": "^3.13.4",
+    "dotenv": "^16.4.5"
   },
   "scripts": {
     "start": "node src/index.js"

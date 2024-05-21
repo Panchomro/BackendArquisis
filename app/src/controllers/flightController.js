@@ -112,5 +112,4 @@ class FlightController {
   }
 }
 
-
 module.exports = FlightController;

@@ -1,7 +1,7 @@
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const checkJwt = require('./middlewares/auth');
+// const checkJwt = require('./middlewares/auth');
 
 const flightRoutes = require('./routes/flightRoutes');
 const infoComprasRoutes = require('./routes/infoComprasRoutes');

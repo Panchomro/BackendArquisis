@@ -12,7 +12,7 @@ const queue = new Queue('flightQueue', {
     host: process.env.REDIS_HOST || '3002',
     port: process.env.REDIS_PORT || 6379,
     password: process.env.REDIS_PASSWORD,
-  }
+  },
 });
 
 // Función para obtener los 20 vuelos
@@ -52,7 +52,9 @@ app.post('/job', async (req, res) => {
     const flightsForWorkers = await fetchFlights(flightData.departure_airport_time, flightData.departure_airport_id);
 
     // Crear un trabajo con los vuelos y agregarlo a la cola
-    const job = await queue.add('flightJob', { user_ip, user_id, flightData, flightsForWorkers });
+    const job = await queue.add('flightJob', {
+      user_ip, user_id, flightData, flightsForWorkers,
+    });
 
     res.status(200).json({ jobId: job.id });
   } catch (error) {
@@ -69,9 +71,11 @@ app.get('/job/:id', async (req, res) => {
     const job = await queue.getJob(jobId);
     if (job) {
       const state = await job.getState();
-      const progress = job.progress;
+      const { progress } = job;
       const result = job.returnvalue;
-      res.json({ id: job.id, state, progress, result });
+      res.json({
+        id: job.id, state, progress, result,
+      });
     } else {
       res.status(404).json({ error: 'Job not found' });
     }

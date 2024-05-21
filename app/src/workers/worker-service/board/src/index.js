@@ -1,10 +1,10 @@
-const express = require("express");
-const { Queue } = require("bullmq");
-const { createBullBoard } = require("@bull-board/api");
-const { BullMQAdapter } = require("@bull-board/api/bullMQAdapter");
-const { ExpressAdapter } = require("@bull-board/express");
+const express = require('express');
+const { Queue } = require('bullmq');
+const { createBullBoard } = require('@bull-board/api');
+const { BullMQAdapter } = require('@bull-board/api/bullMQAdapter');
+const { ExpressAdapter } = require('@bull-board/express');
 
-const queueMQ = new Queue("audio transcoding", {
+const queueMQ = new Queue('audio transcoding', {
   connection: {
     host: process.env.REDIS_HOST || 3002,
     port: process.env.REDIS_PORT || 6379,
@@ -12,22 +12,25 @@ const queueMQ = new Queue("audio transcoding", {
   },
 }); // Specify Redis connection using object);
 
-const serverAdapter = new ExpressAdapter();   
-serverAdapter.setBasePath("/admin/queues");
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath('/admin/queues');
 
-const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
+const {
+  // eslint-disable-next-line no-unused-vars
+  addQueue, removeQueue, setQueues, replaceQueues,
+} = createBullBoard({
   queues: [new BullMQAdapter(queueMQ)],
-  serverAdapter: serverAdapter,
+  serverAdapter,
 });
 
 const app = express();
 
-app.use("/admin/queues", serverAdapter.getRouter());
+app.use('/admin/queues', serverAdapter.getRouter());
 
 // other configurations of your server
 
 app.listen(6379, () => {
-  console.log("Running Bull Board on 6379...");
-  console.log("For the UI, open http://localhost:6379/admin/queues");
-  console.log("Make sure Redis is running on port 6379 by default");
+  console.log('Running Bull Board on 6379...');
+  console.log('For the UI, open http://localhost:6379/admin/queues');
+  console.log('Make sure Redis is running on port 6379 by default');
 });
