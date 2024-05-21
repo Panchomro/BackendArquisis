@@ -33,6 +33,10 @@ async function syncDatabase() {
 
 syncDatabase();
 
+app.get('/', (req, res) => {
+  res.send('Bienvenido a la API de vuelos 2');
+});
+
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor Express corriendo en http://localhost:${PORT}`);

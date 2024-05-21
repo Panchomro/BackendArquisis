@@ -1,0 +1,8 @@
+version: '3'
+services:
+  api:
+    image: public.ecr.aws/m6b2c6w5/flight-api:latest
+    ports:
+      - 3000:3000
+    environment:
+      - PORT-3000
