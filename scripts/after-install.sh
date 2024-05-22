@@ -1,3 +1,2 @@
 echo "Pulling aplication"
-cd /home/ubuntu/
-docker-compose --file docker-compose.production.yml pull
+docker-compose --file /home/ubuntu/docker-compose.production.yml pull

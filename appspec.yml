@@ -3,17 +3,19 @@ os: linux
 files:
   # Que archivos se copiaran en la instancia
   # https://docs.aws.amazon.com/codedeploy/latest/userguide/tutorials-on-premises-instance-2-create-sample-revision.html
-  - source: ./app/src/docker-compose.production.yml
+  - source: docker-compose.production.yml
     # Carpeta donde lo vamos a dejar
     destination: /home/ubuntu/
   - source: scripts
     destination: /home/ubuntu/scripts
+  - source: .env
+    destination: /home/ubuntu/
 
 # Ciclo de vida del deployment 
 # https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html
 hooks:
   ApllicationStop:
-    - location: ./scripts/application-stop.sh
+    - location: /home/ubuntu/scripts/application-stop.sh
       timeout: 10000
   AfterInstall:
     - location: ./scripts/after-install.sh
