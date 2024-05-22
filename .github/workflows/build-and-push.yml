@@ -95,10 +95,11 @@ jobs:
       - name: Create CodeDeploy Deployment
         id: create-deployment
         run: |
-          deploymentId=$(aws deploy create-deployment --application-name Flightapi-codeDeploy-app --deployment-gr
-oup-name group-flightApi-CD --region us-east-2 --s3-location bucket=flightapi-bucket,bu
-ndleType=zip,key=deploy.zip --file-exists-behavior OVERWRITE --description "Automatic deployment from githubactions commit ${{github.sha}}" | jq -r '.deploymentId')
-echo "DeploymentId=$deploymentId" >> $GITHUB_OUTPUT
+          deploymentId=$(aws deploy create-deployment --application-name \
+          Flightapi-codeDeploy-app --deployment-group-name group-flightApi-CD --region us-east-2 \
+          --s3-location bucket=flightapi-bucket,bundleType=zip,key=deploy.zip --file-exists-behavior OVERWRITE \
+          --description "Automatic deployment from githubactions commit ${{github.sha}}" | jq -r '.deploymentId')
+          echo "DeploymentId=$deploymentId" >> $GITHUB_OUTPUT
 
       - name: Wait for deployment to finish
         run: |
