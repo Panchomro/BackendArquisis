@@ -1,10 +1,13 @@
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
+const bodyParser = require('body-parser');
 const checkJwt = require('./middlewares/auth');
 
 const flightRoutes = require('./routes/flightRoutes');
 const infoComprasRoutes = require('./routes/infoComprasRoutes');
+const WebpayController = require('./controllers/webpayController'); // Asegúrate de importar esto
+
 
 const Flight = require('./models/Flight');
 const InfoCompras = require('./models/InfoCompras');
@@ -16,10 +19,16 @@ const { PORT } = process.env;
 // Middleware
 app.use(express.json());
 app.use(cors());
+//agregue esto
+app.use(bodyParser.urlencoded({ extended: true })); 
 
 app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
-app.use(express.urlencoded({ extended: false }));
+//app.use(express.urlencoded({ extended: false }));
+
+//y agrego esto
+app.post('/confirm-transaction/:flightId/:userId/:quantity/:ip', WebpayController.confirmTransaction);
+
 
 async function syncDatabase() {
   try {
