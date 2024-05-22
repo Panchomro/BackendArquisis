@@ -19,8 +19,8 @@ async function fetchLatLonFromIP(ip) {
 
 async function fetchLocationFromAdress(address) {
   try {
-    // const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
-    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=Washington&key=AIzaSyA3OGJ5L_QRn-ihzMLmB0jIReyHScwHtqU`);
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
+    
     if (response.data.results.length > 0) {
       const geometry = response.data.results[0].geometry; // Get the geometry object
       return {
