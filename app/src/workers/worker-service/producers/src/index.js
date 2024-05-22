@@ -1,28 +1,34 @@
 const { Queue } = require('bullmq');
 const express = require('express');
 const axios = require('axios');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
+
 
 const app = express();
 app.use(express.json());
+// console.log("logs producer");
+// console.log('REDIS_HOST:', process.env.REDIS_HOST);
+// console.log('REDIS_PORT:', process.env.REDIS_PORT);
+// console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD);
 
 // Crear una instancia de la cola
 const queue = new Queue('flightQueue', {
   connection: {
-    host: process.env.REDIS_HOST || '3002',
+    host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || 6379,
     password: process.env.REDIS_PASSWORD,
   },
 });
 
 // Función para obtener los 20 vuelos
-async function fetchFlights(departureAirportTime, departureAirportId) {
+async function fetchFlights(arrivalAirportTime, arrivalAirportId) {
   try {
     // Realizamos la solicitud HTTP para obtener los vuelos desde el backend
     const response = await axios.get(`${process.env.BACKEND_URL}/flights/forWorkers`, {
       params: {
-        departure_airport_time: departureAirportTime,
-        departure_airport_id: departureAirportId,
+        departure_airport_time: arrivalAirportTime,
+        departure_airport_id: arrivalAirportId,
       },
     });
 
@@ -45,11 +51,11 @@ app.post('/job', async (req, res) => {
 
   try {
     // Obtener la información del vuelo desde tu backend
-    const flightResponse = await axios.get(`${process.env.BACKEND_URL}/flights/${flight_id}`);
+    const flightResponse = await axios.get(`http://${process.env.BACKEND_HOST}:${process.env.PORT}/flights/${flight_id}`);
     const flightData = flightResponse.data;
 
     // Obtener los 20 vuelos
-    const flightsForWorkers = await fetchFlights(flightData.departure_airport_time, flightData.departure_airport_id);
+    const flightsForWorkers = await fetchFlights(flightData.arrival_airport_time, flightData.arrival_airport_id);
 
     // Crear un trabajo con los vuelos y agregarlo a la cola
     const job = await queue.add('flightJob', {
@@ -85,7 +91,7 @@ app.get('/job/:id', async (req, res) => {
   }
 });
 
-const PORT = process.env.PRODUCER_PORT || 3001;
+const PORT = process.env.PRODUCER_PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Producer server running on port ${PORT}`);
 });

@@ -1,7 +1,12 @@
 const { Worker, Job } = require("bullmq");
 const axios = require("axios");
-require("dotenv").config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
 
+// console.log("logs consumer");
+// console.log('REDIS_HOST:', process.env.REDIS_HOST);
+// console.log('REDIS_PORT:', process.env.REDIS_PORT);
+// console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD);
 async function fetchLatLonFromIP(ip) {
   try {
     const response = await axios.get(`http://ip-api.com/json/${ip}?fields=lat,lon`);
@@ -91,7 +96,7 @@ async function processJob(job) {
 // Create a worker instance
 const worker = new Worker("flight-queue", processJob, {
   connection: {
-    host: process.env.REDIS_HOST || 3002,
+    host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || 6379,
     password: process.env.REDIS_PASSWORD,
   },
@@ -113,5 +118,9 @@ worker.on("completed", (job, returnvalue) => {
 worker.on("failed", (job, err) => {
   console.log(`Job ${job.id} failed with error:`, err);
 });
+// Function to handle shutdown
+function shutdown() {
+  worker.close().then(() => process.exit(0));
+}
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);

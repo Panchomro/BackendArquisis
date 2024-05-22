@@ -3,10 +3,12 @@ const { Queue } = require('bullmq');
 const { createBullBoard } = require('@bull-board/api');
 const { BullMQAdapter } = require('@bull-board/api/bullMQAdapter');
 const { ExpressAdapter } = require('@bull-board/express');
+// const path = require('path');
+// require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
 
 const queueMQ = new Queue('audio transcoding', {
   connection: {
-    host: process.env.REDIS_HOST || 3002,
+    host: process.env.REDIS_HOST || "redis",
     port: process.env.REDIS_PORT || 6379,
     password: process.env.REDIS_PASSWORD,
   },

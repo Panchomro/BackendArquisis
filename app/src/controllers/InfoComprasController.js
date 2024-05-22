@@ -196,19 +196,19 @@ class InfoComprasController {
   // Método para obtener los proximos 20 vuelos que se envían a los workers para su procesamiento
   static async getFlightsForWorkers(req, res) {
     try {
-      let { arrival_airport_id, arrival_airport_time } = req.query;
+      let { departure_airport_id, departure_airport_time } = req.query;
 
-      if (!arrival_airport_id || !arrival_airport_time) {
+      if (!departure_airport_id || !departure_airport_time) {
         return res.status(400).json({ error: 'Faltan parámetros' });
       }
 
-      const departureDate = new Date(arrival_airport_time);
+      const departureDate = new Date(departure_airport_time);
       const oneWeekLater = new Date(departureDate);
       oneWeekLater.setDate(departureDate.getDate() + 7);
 
       const flights = await Flight.findAll({
         where: {
-          departure_airport_id: arrival_airport_id,
+          departure_airport_id: departure_airport_id,
           departure_airport_time: {
             [Op.between]: [departureDate, oneWeekLater],
           },

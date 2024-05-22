@@ -75,9 +75,12 @@ services:
     networks:
       - worker
     environment:
-      - REDIS_PORT=6379
+      - PRODUCER_PORT=${PRODUCER_PORT}
+      - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_HOST=redis
+      - REDIS_HOST=${REDIS_HOST}
+    ports:
+    - "5000:5000"
 
   consumer:
     build: 
@@ -86,9 +89,10 @@ services:
     networks:
       - worker
     environment:
-      - REDIS_PORT=6379
+      - PRODUCER_PORT=${PRODUCER_PORT}
+      - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_HOST=redis
+      - REDIS_HOST=${REDIS_HOST}
     deploy:
       replicas: 2
 
@@ -108,9 +112,9 @@ services:
     networks:
       - worker
     environment:
-      - REDIS_PORT=6379
+      - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_HOST=redis
+      - REDIS_HOST=${REDIS_HOST}
     ports:
       - 4000:4000
 

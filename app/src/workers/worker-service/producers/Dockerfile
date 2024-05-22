@@ -12,4 +12,5 @@ RUN npm install
 
 COPY . .
 
+
 CMD [ "yarn", "start" ]
