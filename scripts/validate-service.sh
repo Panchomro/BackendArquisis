@@ -1,1 +1,1 @@
-echo "Validating service"
+# echo "Validating service"
