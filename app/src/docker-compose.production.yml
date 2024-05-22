@@ -22,6 +22,9 @@ services:
       BROKER_PORT: ${BROKER_PORT}
       BROKER_USER: ${BROKER_USER}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
+    volumes:
+      - .:/app
+      - ./migrations:/migrations
     command: npm run start:app
   
   db:
