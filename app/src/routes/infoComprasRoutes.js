@@ -11,6 +11,8 @@ router.post('/create-transaction', checkJwt, WebpayController.createTransaction)
 
 router.post('/flights/validations/:request_id', InfoComprasController.manejarValidation);
 
+router.post('/flights/transactions/:request_id', checkJwt, WebpayController.confirmTransaction);
+
 router.get('/historial', checkJwt, InfoComprasController.historialInfoCompras);
 
 module.exports = router;
