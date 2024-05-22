@@ -1,11 +1,16 @@
-version: '3'
+version: '3.4'
+
 services:
   app:
     image: public.ecr.aws/m6b2c6w5/flight-api:latest
-    ports:
-      - 3000:3000
+    container_name: app
+    #restart: unless-stopped
+    networks:
+      - app-network
     depends_on:
       - db
+    ports:
+      - "3000:3000" # To expose the app to the machine localhost (machine-port:container:port)
     environment:
       DATABASE_USER: ${DB_USER}
       DATABASE_PASSWORD: ${DB_PASSWORD}
@@ -17,6 +22,7 @@ services:
       BROKER_PORT: ${BROKER_PORT}
       BROKER_USER: ${BROKER_USER}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
+    command: npm run start:app
   
   db:
     image: postgres # Cambia "nombre_imagen:tag" al nombre y etiqueta de tu imagen Docker
@@ -38,7 +44,7 @@ services:
     
 
   mqtt:
-    image: public.ecr.aws/m6b2c6w5/flight-api:latest 
+    image: public.ecr.aws/m6b2c6w5/mqtt:latest
     container_name: mqtt
     # restart: unless-stopped
     depends_on:
