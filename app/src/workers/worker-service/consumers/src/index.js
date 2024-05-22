@@ -19,10 +19,20 @@ async function fetchLatLonFromIP(ip) {
 
 async function fetchLocationFromAdress(address) {
   try {
-    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
-    return response.data;
+    // const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=Washington&key=AIzaSyA3OGJ5L_QRn-ihzMLmB0jIReyHScwHtqU`);
+    if (response.data.results.length > 0) {
+      const geometry = response.data.results[0].geometry; // Get the geometry object
+      return {
+        lat: geometry.location.lat, 
+        lon: geometry.location.lng 
+      };
+    } else {
+      console.error("No results found for the given address:", address);
+      return null; 
+    }
   } catch (error) {
-    console.error("Error fetching latitude and longitude from IP:", error);
+    console.error("Error fetching latitude and longitude from address:", error);
     return null;
   }
 }
@@ -47,16 +57,15 @@ async function processJob(job) {
   let array_pond = [];
   let array_entries = [];
   for (let entry of flightsForWorkers) {
-    console.log("entry_location:", entry.departure_airport_name);
-    const address = await fetchLocationFromAdress(entry.departure_airport_name);
-    if (!address) {
+    const locationData = await fetchLocationFromAdress(entry.departure_airport_name);
+    if (!locationData) {
       console.log("Failed to fetch address for entry:", entry);
       continue;
     }
-    const lat = address.results[0].geometry.location.lat;
-    const lon = address.results[0].geometry.location.lng;
+    const lat = locationData.lat;
+    const lon = locationData.lon;
     const ponderator = (Math.sqrt(( location.lat-lat) ** 2 + (location.lon - lon) ** 2))/entry.price;
-    if (length(array_pond) < 3){
+    if (array_pond.length < 3){
       array_pond.push(ponderator);
       array_entries.push(entry);
     }
