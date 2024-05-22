@@ -10,13 +10,13 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
 async function fetchLatLonFromIP(ip) {
   try {
     const response = await axios.get(`http://ip-api.com/json/${ip}?fields=lat,lon`);
-
-    if (response.data.length > 0) {
-    return response.data;
-  } else {
-    console.error("No results found for the given IP:", ip);
-    return null;
-  }
+    if (response.data && typeof response.data.lat === 'number' && typeof response.data.lon === 'number') {
+      console.log("Location fetched from IP:", response.data.lat, response.data.lon);
+      return response.data;
+    } else {
+      console.error("No results found for the given IP:", ip);
+      return null;
+    }
   } catch (error) {
     console.error("Error fetching latitude and longitude from IP:", error);
     return null;
@@ -28,6 +28,7 @@ async function fetchLocationFromAdress(address) {
     const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
     if (response.data.results.length > 0) {
       const geometry = response.data.results[0].geometry; // Get the geometry object
+      console.log("Location fetched from address:", geometry.location.lat, geometry.location.lng);
       return {
         lat: geometry.location.lat, 
         lon: geometry.location.lng 
@@ -59,6 +60,7 @@ async function processJob(job) {
   // Calculate top 3 recommendations
   let array_pond = [];
   let array_entries = [];
+    
   for (let entry of flightsForWorkers) {
     const locationData = await fetchLocationFromAdress(entry.departure_airport_name);
     if (!locationData) {
@@ -68,6 +70,8 @@ async function processJob(job) {
     const lat = locationData.lat;
     const lon = locationData.lon;
     const ponderator = (Math.sqrt(( location.lat-lat) ** 2 + (location.lon - lon) ** 2))/entry.price;
+    console.log('Array_pond:', array_pond);
+    console.log('Ponderator:', ponderator);
     if (array_pond.length < 3){
       array_pond.push(ponderator);
       array_entries.push(entry);
@@ -136,7 +140,7 @@ worker.on("completed", async (job, returnvalue) => {
   console.log("response:", returnvalue.response);
   try {
     // ${process.env.PORT}
-    await axios.post(`http://app:3000/recommendations`, {
+    await axios.post(`http://app:${process.env.PORT}/recommendations`, {
       user_ip: returnvalue.response.user_ip,
       user_id:  returnvalue.response.user_id,
       recommendations: returnvalue.response.recommendations

@@ -51,6 +51,7 @@ app.get('/heartbeat', (req, res) => {
 // Endpoint para crear un nuevo trabajo
 app.post('/job', async (req, res) => {
   const { user_ip, user_id, flight_id } = req.body;
+  console.log('data: ', user_ip, user_id, flight_id);
 
   try {
     console.log('Creating job for flight:', flight_id);
@@ -78,7 +79,7 @@ app.post('/job', async (req, res) => {
       res.status(500).json({ error: 'Connection refused to backend or Redis server' });
     } else {
       // Otros errores
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error 4' });
     }
   }
 });
@@ -101,7 +102,7 @@ app.get('/job/:id', async (req, res) => {
     }
   } catch (error) {
     console.error('Error fetching job:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error 5' });
   }
 });
 

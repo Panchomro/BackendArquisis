@@ -16,7 +16,7 @@ class RecommendationController {
       res.status(201).json({ message: 'Recommendations saved successfully' });
     } catch (error) {
       console.error('Error saving recommendations:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error 1' });
     }
   }
   static async getRecommendations(req, res) {
@@ -34,7 +34,7 @@ class RecommendationController {
       res.status(200).json(recommendations);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error 2' });
     }
   }
 
@@ -57,7 +57,7 @@ class RecommendationController {
       res.status(200).json(recommendations);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error 3' });
     }
   }
 }

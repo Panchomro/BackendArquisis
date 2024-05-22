@@ -131,7 +131,7 @@ class FlightController {
   
       const flights = await Flight.findAll({
         where: {
-        departure_airport_id: departure_airport_id, //COMENTAR ESTA LINEA PARA TESTEAR!! SINO, NO SE VAN A ENCONTRAR VUELOS 
+        // departure_airport_id: departure_airport_id, //COMENTAR ESTA LINEA PARA TESTEAR!! SINO, NO SE VAN A ENCONTRAR VUELOS 
           createdAt: {
             [Op.between]: [creationDate, oneWeekLater],
           },
