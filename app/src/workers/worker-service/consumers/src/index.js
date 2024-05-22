@@ -10,7 +10,13 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
 async function fetchLatLonFromIP(ip) {
   try {
     const response = await axios.get(`http://ip-api.com/json/${ip}?fields=lat,lon`);
+
+    if (response.data.length > 0) {
     return response.data;
+  } else {
+    console.error("No results found for the given IP:", ip);
+    return null;
+  }
   } catch (error) {
     console.error("Error fetching latitude and longitude from IP:", error);
     return null;
@@ -20,7 +26,6 @@ async function fetchLatLonFromIP(ip) {
 async function fetchLocationFromAdress(address) {
   try {
     const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
-    
     if (response.data.results.length > 0) {
       const geometry = response.data.results[0].geometry; // Get the geometry object
       return {
@@ -49,9 +54,7 @@ async function processJob(job) {
   
   //get location from ip
   const location = await fetchLatLonFromIP(user_ip);
-  if (!location) {
-    console.log("Failed to fetch latitude and longitude for IP:", user_ip);
-  }
+ 
   
   // Calculate top 3 recommendations
   let array_pond = [];
