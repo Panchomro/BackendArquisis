@@ -39,7 +39,7 @@ class WebpayController {
       const amount = vuelo.price * quantity;
 
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
-      const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:3000/`); //poner aqui el path de la view de redireccion
+      const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:3000/confirm-transaction/${flightId}/${userId}/${quantity}/${ip}`); //poner aqui el path de la view de redireccion
 
       infoCompra.deposit_token = trx.token;
       infoCompra.save();
@@ -54,7 +54,7 @@ class WebpayController {
   static async confirmTransaction(req, res) {
     try {
       // 1. Obtén el token de la transacción del cuerpo de la solicitud
-      const { token } = req.params;
+      const token = req.body.token_ws;
       if (!token) {
         res.status(200).json({ message: 'Usuario anula compra' });
       }
