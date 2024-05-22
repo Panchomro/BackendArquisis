@@ -25,6 +25,11 @@ services:
     volumes:
       - ./migrations:/migrations
     command: npm run start:app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: '512M'
   
   db:
     image: postgres # Cambia "nombre_imagen:tag" al nombre y etiqueta de tu imagen Docker
@@ -43,6 +48,11 @@ services:
       BROKER_PORT: ${BROKER_PORT}
       BROKER_USER: ${BROKER_USER}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: '512M'
     
 
   mqtt:
@@ -64,6 +74,11 @@ services:
       DATABASE_PORT: ${DB_PORT}
       DATABASE_HOST: ${DB_HOST}
       PORT: ${PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: '512M'
 
 networks:
   app-network:
