@@ -6,8 +6,10 @@ const router = express.Router();
 
 router.post('/flights', FlightController.createFlight);
 
-router.get('/flights', checkJwt, FlightController.getFlights);
+router.get('/flights', FlightController.getFlights);
 
-router.get('/flights/:id', checkJwt, FlightController.getFlightById);
+router.get('/flights/:id', FlightController.getFlightById);
+
+router.get('/forWorkers', FlightController.getFlightsForWorkers);
 
 module.exports = router;

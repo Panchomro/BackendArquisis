@@ -22,15 +22,18 @@ const queue = new Queue('flightQueue', {
 });
 
 // Función para obtener los 20 vuelos
-async function fetchFlights(arrivalAirportTime, arrivalAirportId) {
+async function fetchFlights(createdAt, arrivalAirportId) {
   try {
     // Realizamos la solicitud HTTP para obtener los vuelos desde el backend
-    const response = await axios.get(`${process.env.BACKEND_URL}/flights/forWorkers`, {
+    console.log('arrivalAirportTime:', createdAt);
+    console.log('arrivalAirportId:', arrivalAirportId);
+    const response = await axios.get(`http://app:${process.env.PORT}/forWorkers`, {
       params: {
-        departure_airport_time: arrivalAirportTime,
+        createdAt: createdAt,
         departure_airport_id: arrivalAirportId,
       },
     });
+    console.log('Flights for workers:', response.data);
 
     // Retornamos los vuelos obtenidos desde el backend
     return response.data.flights;
@@ -50,22 +53,33 @@ app.post('/job', async (req, res) => {
   const { user_ip, user_id, flight_id } = req.body;
 
   try {
-    // Obtener la información del vuelo desde tu backend
-    const flightResponse = await axios.get(`http://${process.env.BACKEND_HOST}:${process.env.PORT}/flights/${flight_id}`);
+    console.log('Creating job for flight:', flight_id);
+    const backendUrl = `http://app:${process.env.PORT}/flights/${flight_id}`;
+    console.log('URL de la solicitud GET:', backendUrl);
+    const flightResponse = await axios.get(`http://app:${process.env.PORT}/flights/${flight_id}`);
     const flightData = flightResponse.data;
+    console.log('Flight data:', flightData);
+    console.log('Fetching flights for workers...');
+    const flightsForWorkers = await fetchFlights(flightData.createdAt, flightData.arrival_airport_id);
 
-    // Obtener los 20 vuelos
-    const flightsForWorkers = await fetchFlights(flightData.arrival_airport_time, flightData.arrival_airport_id);
-
-    // Crear un trabajo con los vuelos y agregarlo a la cola
     const job = await queue.add('flightJob', {
       user_ip, user_id, flightData, flightsForWorkers,
     });
 
     res.status(200).json({ jobId: job.id });
   } catch (error) {
-    console.error('Error fetching flight data or adding job to the queue:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error processing job:', error);
+
+    if (error.response) {
+      // Error de respuesta HTTP
+      res.status(error.response.status).json({ error: error.response.data });
+    } else if (error.code === 'ECONNREFUSED') {
+      // Error de conexión rechazada
+      res.status(500).json({ error: 'Connection refused to backend or Redis server' });
+    } else {
+      // Otros errores
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 

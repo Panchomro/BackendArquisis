@@ -31,6 +31,8 @@ async function fetchLocationFromAdress(address) {
 // Function to simulate processing of a job
 async function processJob(job) {
   // Fetch last 20 entries from the database
+  console.log("Processing job:", job.id);
+
 
   const { user_ip, user_id, flightData, flightsForWorkers } = job.data;
 
@@ -38,20 +40,21 @@ async function processJob(job) {
   //get location from ip
   const location = await fetchLatLonFromIP(user_ip);
   if (!location) {
-    console.log("Failed to fetch latitude and longitude for IP:", ip);
+    console.log("Failed to fetch latitude and longitude for IP:", user_ip);
   }
   
   // Calculate top 3 recommendations
   let array_pond = [];
   let array_entries = [];
   for (let entry of flightsForWorkers) {
+    console.log("entry_location:", entry.departure_airport_name);
     const address = await fetchLocationFromAdress(entry.departure_airport_name);
     if (!address) {
       console.log("Failed to fetch address for entry:", entry);
       continue;
     }
     const lat = address.results[0].geometry.location.lat;
-    const lon = address.results[0].geometry.location.lon;
+    const lon = address.results[0].geometry.location.lng;
     const ponderator = (Math.sqrt(( location.lat-lat) ** 2 + (location.lon - lon) ** 2))/entry.price;
     if (length(array_pond) < 3){
       array_pond.push(ponderator);
@@ -72,29 +75,38 @@ async function processJob(job) {
   
   // Log the fetched entries
   console.log("Last 20 entries:", flightsForWorkers);
+  const recommendations = {
+    rec1: array_entries[0],
+    rec2: array_entries[1],
+    rec3: array_entries[2]
+  };
 
+  const response = {
+    user_ip: user_ip,
+    user_id: user_id,
+    recommendations: recommendations
+  };
   // Save recommendations to backend
-  try {
-    await axios.post(`${process.env.PORT}/recommendations`, {
-      user_ip: ip,
-      user_id: user_id,
-      recommendations: array_entries.slice(0, 3),
-    });
-    console.log("Recommendations saved to backend");
-  } catch (error) {
-    console.error("Error saving recommendations to backend:", error);
-  }
+  //   await axios.post(`http://app:${process.env.PORT}/recommendations`, {
+  //     user_ip: user_ip,
+  //     user_id: user_id,
+  //     recommendations: recommendations
+  //   });
+  //   console.log("Recommendations saved to backend");
+  // } catch (error) {
+  //   console.error("Error saving recommendations to backend:", error);
+  // }
   // Optionally report some progress
   await job.updateProgress(42);
 
   // Optionally sending an object as progress
   await job.updateProgress({ flightsForWorkers });
 
-  return { recommendations: array_entries.slice(0, 3) };
-}
+  return { response: response };
 
+}
 // Create a worker instance
-const worker = new Worker("flight-queue", processJob, {
+const worker = new Worker("flightQueue", processJob, {
   connection: {
     host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || 6379,
@@ -107,17 +119,33 @@ const worker = new Worker("flight-queue", processJob, {
 console.log("Worker is listening to jobs...");
 
 // Listen for completed jobs
-worker.on("completed", (job, returnvalue) => {
+worker.on("completed", async (job, returnvalue) => {
   console.log(`Job ${job.id} completed successfully`);
-  console.log("Recommendations:", returnvalue.recommendations);
+  console.log("response:", returnvalue.response);
+  try {
+    // ${process.env.PORT}
+    await axios.post(`http://app:3000/recommendations`, {
+      user_ip: returnvalue.response.user_ip,
+      user_id:  returnvalue.response.user_id,
+      recommendations: returnvalue.response.recommendations
+    });
+    console.log("Recommendations saved to backend");
+  } catch (error) {
+    console.error("Error saving recommendations to backend:", error);
+  }
 
 
 });
+
+
 
 // Listen for failed jobs
 worker.on("failed", (job, err) => {
   console.log(`Job ${job.id} failed with error:`, err);
 });
+
+// worker.run();
+
 // Function to handle shutdown
 function shutdown() {
   worker.close().then(() => process.exit(0));

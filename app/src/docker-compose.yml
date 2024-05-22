@@ -9,6 +9,7 @@ services:
     #restart: unless-stopped
     networks:
       - app-network
+      - worker
     depends_on:
       - db
     ports:
@@ -74,13 +75,18 @@ services:
       dockerfile: Dockerfile
     networks:
       - worker
+      - app-network
     environment:
       - PRODUCER_PORT=${PRODUCER_PORT}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_HOST=${REDIS_HOST}
+      - BACKEND_HOST=${BACKEND_HOST}
+      - PORT=${PORT}
+
     ports:
-    - "5000:5000"
+      - "5000:5000"
+    
 
   consumer:
     build: 
@@ -88,11 +94,14 @@ services:
       dockerfile: Dockerfile
     networks:
       - worker
+      - app-network
     environment:
       - PRODUCER_PORT=${PRODUCER_PORT}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_HOST=${REDIS_HOST}
+      - BACKEND_HOST= ${BACKEND_HOST}
+      - PORT= ${PORT}
     deploy:
       replicas: 2
 
@@ -104,6 +113,8 @@ services:
       - "6379:6379"
     networks:
       - worker
+      - app-network
+
 
   board:
     build: 
@@ -111,10 +122,13 @@ services:
       dockerfile: Dockerfile
     networks:
       - worker
+      - app-network
     environment:
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_HOST=${REDIS_HOST}
+      - BACKEND_HOST= ${BACKEND_HOST}
+      - PORT= ${PORT}
     ports:
       - 4000:4000
 

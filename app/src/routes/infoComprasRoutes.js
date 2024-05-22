@@ -10,6 +10,4 @@ router.post('/flights/validations/:request_id', InfoComprasController.manejarVal
 
 router.get('/historial', checkJwt, InfoComprasController.historialInfoCompras);
 
-router.get('/flghts/forWorkers', checkJwt, InfoComprasController.getFlightsForWorkers);
-
 module.exports = router;

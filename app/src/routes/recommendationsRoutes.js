@@ -5,5 +5,6 @@ const RecommendationsController = require('../controllers/recommendationsControl
 // const checkJwt = require('../middlewares/auth');
 
 router.post('/recommendations', RecommendationsController.postRecommendations);
-router.get('/recommendations/:user_id', RecommendationsController.getRecommendations);
+router.get('/recommendations', RecommendationsController.getRecommendations);
+router.get('/recommendations/:user_id', RecommendationsController.getRecommendationsById);
 module.exports = router;

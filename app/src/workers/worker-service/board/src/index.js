@@ -6,7 +6,7 @@ const { ExpressAdapter } = require('@bull-board/express');
 // const path = require('path');
 // require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
 
-const queueMQ = new Queue('audio transcoding', {
+const queueMQ = new Queue('flightQueue', {
   connection: {
     host: process.env.REDIS_HOST || "redis",
     port: process.env.REDIS_PORT || 6379,
