@@ -11,7 +11,7 @@ async function fetchLatLonFromIP(ip) {
   try {
     const response = await axios.get(`http://ip-api.com/json/${ip}?fields=lat,lon`);
     if (response.data && typeof response.data.lat === 'number' && typeof response.data.lon === 'number') {
-      console.log("Location fetched from IP:", response.data.lat, response.data.lon);
+      // console.log("Location fetched from IP:", response.data.lat, response.data.lon);
       return response.data;
     } else {
       console.error("No results found for the given IP:", ip);
@@ -27,8 +27,8 @@ async function fetchLocationFromAdress(address) {
   try {
     const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
     if (response.data.results.length > 0) {
-      const geometry = response.data.results[0].geometry; // Get the geometry object
-      console.log("Location fetched from address:", geometry.location.lat, geometry.location.lng);
+      // const geometry = response.data.results[0].geometry; // Get the geometry object
+      console.log("Location fetched from address:");
       return {
         lat: geometry.location.lat, 
         lon: geometry.location.lng 
@@ -70,8 +70,8 @@ async function processJob(job) {
     const lat = locationData.lat;
     const lon = locationData.lon;
     const ponderator = (Math.sqrt(( location.lat-lat) ** 2 + (location.lon - lon) ** 2))/entry.price;
-    console.log('Array_pond:', array_pond);
-    console.log('Ponderator:', ponderator);
+    // console.log('Array_pond:', array_pond);
+    // console.log('Ponderator:', ponderator);
     if (array_pond.length < 3){
       array_pond.push(ponderator);
       array_entries.push(entry);
@@ -90,7 +90,7 @@ async function processJob(job) {
   }
   
   // Log the fetched entries
-  console.log("Last 20 entries:", flightsForWorkers);
+  // console.log("Last 20 entries:", flightsForWorkers);
   const recommendations = {
     rec1: array_entries[0],
     rec2: array_entries[1],

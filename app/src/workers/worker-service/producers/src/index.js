@@ -25,15 +25,15 @@ const queue = new Queue('flightQueue', {
 async function fetchFlights(createdAt, arrivalAirportId) {
   try {
     // Realizamos la solicitud HTTP para obtener los vuelos desde el backend
-    console.log('arrivalAirportTime:', createdAt);
-    console.log('arrivalAirportId:', arrivalAirportId);
+    // console.log('arrivalAirportTime:', createdAt);
+    // console.log('arrivalAirportId:', arrivalAirportId);
     const response = await axios.get(`http://app:${process.env.PORT}/forWorkers`, {
       params: {
         createdAt: createdAt,
         departure_airport_id: arrivalAirportId,
       },
     });
-    console.log('Flights for workers:', response.data);
+    console.log('20 Flights for workers: recieved');
 
     // Retornamos los vuelos obtenidos desde el backend
     return response.data.flights;
@@ -51,15 +51,15 @@ app.get('/heartbeat', (req, res) => {
 // Endpoint para crear un nuevo trabajo
 app.post('/job', async (req, res) => {
   const { user_ip, user_id, flight_id } = req.body;
-  console.log('data: ', user_ip, user_id, flight_id);
+  // console.log('data: ', user_ip, user_id, flight_id);
 
   try {
     console.log('Creating job for flight:', flight_id);
     const backendUrl = `http://app:${process.env.PORT}/flights/${flight_id}`;
-    console.log('URL de la solicitud GET:', backendUrl);
+    // console.log('URL de la solicitud GET:', backendUrl);
     const flightResponse = await axios.get(`http://app:${process.env.PORT}/flights/${flight_id}`);
     const flightData = flightResponse.data;
-    console.log('Flight data:', flightData);
+    // console.log('Flight data:', flightData);
     console.log('Fetching flights for workers...');
     const flightsForWorkers = await fetchFlights(flightData.createdAt, flightData.arrival_airport_id);
 
