@@ -1,13 +1,15 @@
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const checkJwt = require('./middlewares/auth');
+// const checkJwt = require('./middlewares/auth');
 
 const flightRoutes = require('./routes/flightRoutes');
 const infoComprasRoutes = require('./routes/infoComprasRoutes');
+const recommendationsRoutes = require('./routes/recommendationsRoutes');
 
 const Flight = require('./models/Flight');
 const InfoCompras = require('./models/InfoCompras');
+const Recommendations = require('./models/Recommendations');
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.use(cors());
 
 app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
+app.use('/', recommendationsRoutes);
 app.use(express.urlencoded({ extended: false }));
 
 
@@ -26,6 +29,7 @@ async function syncDatabase() {
   try {
     await Flight.sync({ force: false });
     await InfoCompras.sync({ force: false });
+    await Recommendations.sync({ force: false });
     console.log('Modelo sincronizado con la base de datos');
   } catch (error) {
     console.error('Error al sincronizar el modelo con la base de datos:', error);

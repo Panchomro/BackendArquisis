@@ -1,6 +1,7 @@
 const mqtt = require('mqtt');
-const short = require('short-uuid');
 const axios = require('axios');
+const { Op } = require('sequelize');
+const short = require('short-uuid');
 const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
 const WebpayController = require('./webpayController');
@@ -169,6 +170,19 @@ class InfoComprasController {
         await vuelo.save();
         console.log('Compra validada');
         res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
+        // Una vez confirmada la compra se envía la información a la cola de RabbitMQ con el ip
+        // y la información de la compra
+        try {
+          await axios.post(`${process.env.PRODUCER_URL}/job`, {
+            user_ip: infoCompra.user_ip,
+            user_id: infoCompra.user_id,
+            flight_id: vuelo.id,
+          });
+          console.log('Información enviada al productor');
+        } catch (error) {
+          console.error('Error al enviar la información al productor:', error);
+        }
+        // });
       } else if (validationData.valid === false) {
         infoCompra.isValidated = true;
         await infoCompra.save();
@@ -200,7 +214,6 @@ class InfoComprasController {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
-
 }
 
 module.exports = InfoComprasController;
