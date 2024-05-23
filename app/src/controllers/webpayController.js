@@ -10,42 +10,42 @@ const { default: axios } = require('axios');
 class WebpayController {
   static async createTransaction(req, res) {
     try {
-      console.log('Authorization Header:', req.headers.authorization);
       const { id_compra } = req.body;
+      console.log('id_compra:', id_compra);
 
       const infoCompra = await InfoCompras.findOne({
-        where: { id_compra },
+        where: { id: id_compra},
       });
 
       if (!infoCompra) {
         throw new Error('Compra no encontrada');
       }
 
-      const quantity = infoCompra.quantity;
       const groupId = infoCompra.group_id;
       const flightId = infoCompra.flight_id;
-
-      const userId = req.auth.sub;
-      console.log('idVuelo:', flightId);
-      console.log('user_id:', userId);
+      console.log('groupId:', groupId);
 
       const buyOrder = infoCompra.request_id;
+      console.log('buyOrder:', buyOrder);
 
       const vuelo = await Flight.findByPk(flightId);
       if (!vuelo) {
         throw new Error('Vuelo no encontrado');
       }
 
-      const amount = vuelo.price * quantity;
+      const amount = infoCompra.totalPrice;
+      console.log('amount:', amount);
 
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
       const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:5173/transaction`); //poner aqui el path de la view de redireccion
 
       infoCompra.deposit_token = trx.token;
+      console.log('deposit_token:', trx.token);
       infoCompra.save();
 
       res.status(200).json({ url: trx.url, token: trx.token });
     } catch (error) {
+      console.log('Error al crear transacción:', error);
       console.error('Error creating transaction:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
@@ -54,21 +54,23 @@ class WebpayController {
   static async confirmTransaction(req, res) {
     try {
       // 1. Obtén el token de la transacción del cuerpo de la solicitud
-      const { token } = req.params;
-      if (!token) {
+      const { token_ws } = req.body;
+      console.log('token de confirmacion:', token_ws);
+      if (!token_ws) {
         res.status(200).json({ message: 'Usuario anula compra' });
       }
 
       // 2. Confirma la transacción de WebPay
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
-      const confirmedTx = await tx.commit(token);
+      const confirmedTx = await tx.commit(token_ws);
+      
 
       // 3. Actualiza el estado de la compra en tu base de datos
       const infoCompra = await InfoCompras.findOne({
-        where: { request_id: confirmedTx.buyOrder },
+        where: { request_id: confirmedTx.buy_order },
       });
       infoCompra.isValidated = true;
-      if (confirmedTx.responseCode === 0) {
+      if (confirmedTx.response_code === 0) {
         infoCompra.valid = true;
         infoCompra.save();
         res.status(200).json({ message: 'Transacción exitosa' });
@@ -77,9 +79,9 @@ class WebpayController {
         res.status(200).json({ message: 'Transacción fallida' });
       }
       // 4. Envía una respuesta al canal de MQTT
-      await axios.post(`http://app:3000/flights/validations/${confirmedTx.buyOrder}`, {
-        valid: infoCompra.valid,
-      });
+      // await axios.post(`http://app:3000/flights/validations/${confirmedTx.buyOrder}`, {
+      //   valid: infoCompra.valid,
+      // });
 
     } catch (error) {
       console.error('Error confirming transaction:', error);

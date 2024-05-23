@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-const sequelize = new Sequelize('postgres://lukasguthrie:204290482@db:5432/e0arquisis');
+const sequelize = new Sequelize('postgres://panchomro:Arya1234@db:5432/e0arquisis');
 // const db = require('../db');
 
 const Flight = sequelize.define('Flight', {
