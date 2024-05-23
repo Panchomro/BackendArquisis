@@ -2,16 +2,18 @@ version: '3.4'
 
 services:
   app:
-    image: public.ecr.aws/m6b2c6w5/flight-api:latest
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
+    # image: public.ecr.aws/m6b2c6w5/flight-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: app
     #restart: unless-stopped
     networks:
       - app-network
+      - worker
     depends_on:
       - db
+      
     ports:
       - "3000:3000" # To expose the app to the machine localhost (machine-port:container:port)
     environment:
@@ -25,6 +27,9 @@ services:
       BROKER_PORT: ${BROKER_PORT}
       BROKER_USER: ${BROKER_USER}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      PRODUCER_PORT: ${PRODUCER_PORT}
+      BACKEND_HOST: ${BACKEND_HOST}
     command: npm run start:app
   
   db:
@@ -47,10 +52,10 @@ services:
     
 
   mqtt:
-    image: public.ecr.aws/m6b2c6w5/mqtt:latest
-    # build: 
-    #   context: .
-    #   dockerfile: mqtt.Dockerfile
+    # image: public.ecr.aws/m6b2c6w5/mqtt:latest
+    build: 
+      context: .
+      dockerfile: mqtt.Dockerfile
     container_name: mqtt
     # restart: unless-stopped
     depends_on:
@@ -69,9 +74,58 @@ services:
       DATABASE_HOST: ${DB_HOST}
       PORT: ${PORT}
 
+  producer:
+    build: 
+      context: ./workers/worker-service/producers
+      dockerfile: Dockerfile
+    networks:
+      - worker
+      - app-network
+    environment:
+      - PRODUCER_PORT=${PRODUCER_PORT}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - BACKEND_HOST=${BACKEND_HOST}
+      - PORT=${PORT}
+
+    ports:
+      - "5000:5000"
+    
+
+  consumer:
+    build: 
+      context: ./workers/worker-service/consumers
+      dockerfile: Dockerfile
+    networks:
+      - worker
+      - app-network
+    environment:
+      - PRODUCER_PORT=${PRODUCER_PORT}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - BACKEND_HOST=${BACKEND_HOST}
+      - PORT=${PORT}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    deploy:
+      replicas: 2
+
+  redis:
+    image: redis
+    container_name: redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    networks:
+      - worker
+      - app-network
+      
 networks:
   app-network:
     driver: bridge
+  worker:
+    driver: bridge  
 
 volumes:
   db-volume:

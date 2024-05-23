@@ -110,7 +110,51 @@ class FlightController {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
+  // Método para obtener los proximos 20 vuelos que se envían a los workers para su procesamiento
+  static async getFlightsForWorkers(req, res) {
+    try {
+      // Log de los parámetros recibidos
+      console.log('Parámetros recibidos:', req.query);
+  
+      let { createdAt, departure_airport_id } = req.query;
+  
+      if (!departure_airport_id || !createdAt) {
+        return res.status(400).json({ error: 'Faltan parámetros' });
+      }
+  
+      const creationDate = new Date(createdAt);
+      const oneWeekLater = new Date(creationDate);
+      oneWeekLater.setDate(creationDate.getDate() + 7);
+  
+      // Log de los rangos de fechas
+      console.log('Rango de fechas:', creationDate, oneWeekLater);
+  
+      const flights = await Flight.findAll({
+        where: {
+          departure_airport_id: departure_airport_id, //COMENTAR ESTA LINEA PARA TESTEAR!! SINO, NO SE VAN A ENCONTRAR VUELOS 
+          createdAt: {
+            [Op.between]: [creationDate, oneWeekLater],
+          },
+        },
+        order: [['createdAt', 'ASC']], // Ordenar por departure_airport_time ascendente
+        limit: 20,
+      });
+  
+      // Log de los vuelos encontrados
+      console.log('Vuelos encontrados:', flights);
+  
+      res.status(200).json({
+        flights,
+        totalCount: flights.length,
+      });
+    } catch (error) {
+      // Log del error detallado
+      console.error('Error al buscar vuelos:', error);
+  
+      // Responder con el mensaje de error específico
+      res.status(500).json({ error: 'Error interno del servidor', details: error.message });
+    }
+  }
 }
-
 
 module.exports = FlightController;
