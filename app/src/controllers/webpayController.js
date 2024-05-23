@@ -91,10 +91,8 @@ class WebpayController {
         res.status(200).json({ message: 'Transacción fallida' });
       }
       // 4. Envía una respuesta al canal de MQTT
-      // await axios.post(`http://app:3000/flights/validations/${confirmedTx.buyOrder}`, {
-      //   valid: infoCompra.valid,
-      // });
-
+      const validationData = await InfoComprasController.createValidationData(infoCompra.id);
+      InfoComprasController.enviarCompraMqtt(validationData, 'validation');
     } catch (error) {
       console.error('Error confirming transaction:', error);
       res.status(500).json({ error: 'Error interno del servidor' });

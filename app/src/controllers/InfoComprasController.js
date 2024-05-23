@@ -81,8 +81,7 @@ class InfoComprasController {
 
       // Enviar los datos de la compra a través de MQTT
       const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
-      const validationData = await InfoComprasController.createValidationData(infoCompra.id);
-      InfoComprasController.enviarCompraMqtt(jsonData, validationData);
+      InfoComprasController.enviarCompraMqtt(jsonData, 'request');
 
       // Enviar una respuesta exitosa
       res.status(200).json(transactionResponse.data);
@@ -122,7 +121,7 @@ class InfoComprasController {
     return jsonData;
   }
 
-  static async enviarCompraMqtt(jsonData, validationData) {
+  static async enviarCompraMqtt(data, type) {
     const mqttOptions = {
       host: process.env.BROKER_HOST,
       port: process.env.BROKER_PORT,
@@ -134,8 +133,11 @@ class InfoComprasController {
 
     mqttClient.on('connect', () => {
       console.log('Conectado al broker MQTT dentro de enviarCompraMqtt');
-      mqttClient.publish('flights/requests', JSON.stringify(jsonData));
-      mqttClient.publish('flights/validation', JSON.stringify(validationData));
+      if (type === 'request') {
+        mqttClient.publish('flights/requests', JSON.stringify(data));
+      } else if (type === 'validation') {
+        mqttClient.publish('flights/validation', JSON.stringify(data));
+      }
       console.log('Request enviada al broker MQTT');
       mqttClient.end();
     });
