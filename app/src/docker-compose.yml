@@ -2,10 +2,10 @@ version: '3.4'
 
 services:
   app:
-    image: public.ecr.aws/m6b2c6w5/flight-api:latest
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
+    # image: public.ecr.aws/m6b2c6w5/flight-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: app
     #restart: unless-stopped
     networks:
@@ -28,6 +28,8 @@ services:
       BROKER_USER: ${BROKER_USER}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
       AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      PRODUCER_PORT: ${PRODUCER_PORT}
+      BACKEND_HOST: ${BACKEND_HOST}
     command: npm run start:app
   
   db:
@@ -50,10 +52,10 @@ services:
     
 
   mqtt:
-    image: public.ecr.aws/m6b2c6w5/mqtt:latest
-    # build: 
-    #   context: .
-    #   dockerfile: mqtt.Dockerfile
+    # image: public.ecr.aws/m6b2c6w5/mqtt:latest
+    build: 
+      context: .
+      dockerfile: mqtt.Dockerfile
     container_name: mqtt
     # restart: unless-stopped
     depends_on:

@@ -3,10 +3,6 @@ const axios = require("axios");
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
 
-// console.log("logs consumer");
-// console.log('REDIS_HOST:', process.env.REDIS_HOST);
-// console.log('REDIS_PORT:', process.env.REDIS_PORT);
-// console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD);
 async function fetchLatLonFromIP(ip) {
   try {
     const response = await axios.get(`http://ip-api.com/json/${ip}?fields=lat,lon`);

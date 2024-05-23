@@ -172,16 +172,7 @@ class InfoComprasController {
         res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
         // Una vez confirmada la compra se envía la información a la cola de RabbitMQ con el ip
         // y la información de la compra
-        try {
-          await axios.post(`${process.env.PRODUCER_URL}/job`, {
-            user_ip: infoCompra.user_ip,
-            user_id: infoCompra.user_id,
-            flight_id: vuelo.id,
-          });
-          console.log('Información enviada al productor');
-        } catch (error) {
-          console.error('Error al enviar la información al productor:', error);
-        }
+        
         // });
       } else if (validationData.valid === false) {
         infoCompra.isValidated = true;

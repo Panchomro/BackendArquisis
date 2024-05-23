@@ -6,6 +6,7 @@ const Flight = require('../models/Flight'); // Importa el modelo de vuelo
 const InfoComprasController = require('./InfoComprasController');
 const { info } = require('cli');
 const { default: axios } = require('axios');
+require('dotenv').config();
 
 class WebpayController {
   static async createTransaction(req, res) {
@@ -73,6 +74,17 @@ class WebpayController {
       if (confirmedTx.response_code === 0) {
         infoCompra.valid = true;
         infoCompra.save();
+        //Gatillante workers
+        try {
+          await axios.post(`http://producer:${process.env.PRODUCER_PORT}/job`, {
+            user_ip: infoCompra.user_ip,
+            user_id: infoCompra.user_id,
+            flight_id: infoCompra.flight_id,
+          });
+          console.log('Información enviada al productor');
+        } catch (error) {
+          console.error('Error al enviar la información al productor:', error);
+        }
         res.status(200).json({ message: 'Transacción exitosa' });
       } else {
         infoCompra.save();
