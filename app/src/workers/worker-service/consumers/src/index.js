@@ -27,7 +27,7 @@ async function fetchLocationFromAdress(address) {
   try {
     const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`);
     if (response.data.results.length > 0) {
-      // const geometry = response.data.results[0].geometry; // Get the geometry object
+      const geometry = response.data.results[0].geometry; // Get the geometry object
       console.log("Location fetched from address:");
       return {
         lat: geometry.location.lat, 
@@ -116,7 +116,7 @@ async function processJob(job) {
   await job.updateProgress(42);
 
   // Optionally sending an object as progress
-  await job.updateProgress({ flightsForWorkers });
+  await job.updateProgress({ response });
 
   return { response: response };
 

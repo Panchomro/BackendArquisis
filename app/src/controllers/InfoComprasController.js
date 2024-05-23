@@ -10,7 +10,7 @@ class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
       // Obtener los parámetros de la consulta (query parameters)
-      const { quantity, ip, flightId } = req.query;
+      const { quantity, ip, flightId } = req.body;
       const userId = req.auth.sub;
 
       console.log('idVuelo:', flightId);

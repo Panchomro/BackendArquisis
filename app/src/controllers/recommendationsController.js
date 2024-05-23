@@ -40,14 +40,14 @@ class RecommendationController {
 
   static async getRecommendationsById(req, res) {
     try {
-      const { user_id } = req.params;
+      const userId = req.auth.sub;
 
       // Obtén las recomendaciones de la base de datos
-      // Obtén las recomendaciones de la base de datos
+      
       const recommendations = await Recommendations.findAll({
-        where: { user_id },
+        where: { user_id:userId },
         order: [['createdAt', 'DESC']], // Ordenar por fecha de creación, de más reciente a más antiguo
-        limit: 3, // Limitar los resultados a los 3 más recientes
+        limit: 1, // Limitar los resultados a los 3 más recientes
       });
 
       if (!recommendations) {

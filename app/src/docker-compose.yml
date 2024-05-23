@@ -12,6 +12,7 @@ services:
       - worker
     depends_on:
       - db
+      
     ports:
       - "3000:3000" # To expose the app to the machine localhost (machine-port:container:port)
     environment:
@@ -25,6 +26,7 @@ services:
       BROKER_PORT: ${BROKER_PORT}
       BROKER_USER: ${BROKER_USER}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
     command: npm run start:app
   
   db:
