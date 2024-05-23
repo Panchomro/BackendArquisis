@@ -38,7 +38,7 @@ class WebpayController {
       console.log('amount:', amount);
 
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
-      const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:5173/transaction`); //poner aqui el path de la view de redireccion
+      const trx = await tx.create(buyOrder, groupId, amount, `https://web.panchomro.me/transaction`); //poner aqui el path de la view de redireccion
 
       infoCompra.deposit_token = trx.token;
       console.log('deposit_token:', trx.token);
