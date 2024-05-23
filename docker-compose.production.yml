@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   app:
-    image: public.ecr.aws/m6b2c6w5/flight-api:latest
+    image: public.ecr.aws/m6b2c6w5/app:latest
     container_name: app
     #restart: unless-stopped
     networks:
@@ -80,9 +80,7 @@ services:
           cpus: '0.50'
           memory: '512M'
 producer:
-    build: 
-      context: ./workers/worker-service/producers
-      dockerfile: Dockerfile
+    image: public.ecr.aws/m6b2c6w5/producer:latest
     networks:
       - worker
       - app-network
@@ -99,9 +97,7 @@ producer:
     
 
   consumer:
-    build: 
-      context: ./workers/worker-service/consumers
-      dockerfile: Dockerfile
+    image: public.ecr.aws/m6b2c6w5/consumer:latest
     networks:
       - worker
       - app-network
