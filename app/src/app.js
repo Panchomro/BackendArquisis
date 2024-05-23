@@ -24,6 +24,7 @@ app.use('/', infoComprasRoutes);
 app.use('/', recommendationsRoutes);
 app.use(express.urlencoded({ extended: false }));
 
+
 async function syncDatabase() {
   try {
     await Flight.sync({ force: false });
@@ -36,6 +37,10 @@ async function syncDatabase() {
 }
 
 syncDatabase();
+
+app.get('/', (req, res) => {
+  res.send('Bienvenido a la API de vuelos 2');
+});
 
 // Iniciar el servidor
 app.listen(PORT, () => {

@@ -1,6 +1,5 @@
 const express = require('express');
 const FlightController = require('../controllers/flightController');
-const checkJwt = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -11,5 +10,6 @@ router.get('/flights', FlightController.getFlights);
 router.get('/flights/:id', FlightController.getFlightById);
 
 router.get('/forWorkers', FlightController.getFlightsForWorkers);
+
 
 module.exports = router;

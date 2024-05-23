@@ -5,7 +5,7 @@ FROM node:latest
 WORKDIR /
 
 # Copy the files that declares the dependencies (in this case using yarn)
-COPY package*.json app.js ./
+COPY /package*.json /app.js ./
 
 # Check if all the files are correct when building
 RUN ls -a

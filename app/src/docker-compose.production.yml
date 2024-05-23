@@ -1,0 +1,88 @@
+version: '3.4'
+
+services:
+  app:
+    image: public.ecr.aws/m6b2c6w5/flight-api:latest
+    container_name: app
+    #restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - db
+    ports:
+      - "3000:3000" # To expose the app to the machine localhost (machine-port:container:port)
+    environment:
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_NAME: ${DB_NAME}
+      DATABASE_PORT: ${DB_PORT}
+      DATABASE_HOST: ${DB_HOST}
+      PORT: ${PORT}
+      BROKER_HOST: ${BROKER_HOST}
+      BROKER_PORT: ${BROKER_PORT}
+      BROKER_USER: ${BROKER_USER}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
+    volumes:
+      - ./migrations:/migrations
+    command: npm run start:app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: '512M'
+  
+  db:
+    image: postgres # Cambia "nombre_imagen:tag" al nombre y etiqueta de tu imagen Docker
+    container_name: db
+    networks:
+      - app-network
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Mapea el puerto de la base de datos PostgreSQL
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      BROKER_HOST: ${BROKER_HOST}
+      BROKER_PORT: ${BROKER_PORT}
+      BROKER_USER: ${BROKER_USER}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: '512M'
+    
+
+  mqtt:
+    image: public.ecr.aws/m6b2c6w5/mqtt:latest
+    container_name: mqtt
+    # restart: unless-stopped
+    depends_on:
+      - app
+    networks:
+      - app-network
+    environment:
+      BROKER_HOST: ${BROKER_HOST}
+      BROKER_PORT: ${BROKER_PORT}
+      BROKER_USER: ${BROKER_USER}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_NAME: ${DB_NAME}
+      DATABASE_PORT: ${DB_PORT}
+      DATABASE_HOST: ${DB_HOST}
+      PORT: ${PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: '512M'
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-volume:

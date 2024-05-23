@@ -31,6 +31,8 @@
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.2",
+    "short-uuid": "^5.2.0",
+    "transbank-sdk": "^5.0.0",
     "uuid-random": "^1.3.2"
   },
   "devDependencies": {

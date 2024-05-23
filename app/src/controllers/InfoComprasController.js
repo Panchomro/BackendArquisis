@@ -1,9 +1,11 @@
 const mqtt = require('mqtt');
-const uuid = require('uuid-random');
 const axios = require('axios');
 const { Op } = require('sequelize');
+const short = require('short-uuid');
 const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
+const WebpayController = require('./webpayController');
+const { info } = require('cli');
 require('dotenv').config();
 
 class InfoComprasController {
@@ -39,10 +41,9 @@ class InfoComprasController {
       const minutes = String(departureTimeCL.getMinutes()).padStart(2, '0');
       const departureTimeChileno = `${year}-${month}-${day} ${hours}:${minutes}`;
 
-      console.log(departureTimeChileno);
-
       // Crear un ID de solicitud único
-      const requestId = uuid();
+      const translator = short();
+      const requestId = translator.new();
 
       // Calcular el precio total
       const priceTotal = vuelo.price * quantity;
@@ -66,25 +67,45 @@ class InfoComprasController {
         user_ip: ip,
       });
 
-      console.log('infocompra:', infoCompra);
+      console.log('Compra creada:', infoCompra);
+      // Crear transaccion con webpay para el token
+      const transactionResponse = await axios.post('http://app:3000/create-transaction', {
+        id_compra: infoCompra.id,
+      });
+
+      console.log('transactionResponse:', transactionResponse.data);
+
+      if (transactionResponse.status !== 200) {
+        throw new Error('Error al crear transacción con Webpay');
+      }
 
       // Enviar los datos de la compra a través de MQTT
       const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
-      InfoComprasController.enviarCompraMqtt(jsonData);
+      const validationData = await InfoComprasController.createValidationData(infoCompra.id);
+      InfoComprasController.enviarCompraMqtt(jsonData, validationData);
 
       // Enviar una respuesta exitosa
-      res.status(200).json({ message: 'Compra creada exitosamente' });
+      res.status(200).json(transactionResponse.data);
     } catch (error) {
       console.error('Error al crear compra desde MQTT:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
 
+  static async createValidationData(id) {
+    const infoCompra = await InfoCompras.findByPk(id);
+    const validationData = {
+      request_id: infoCompra.request_id,
+      group_id: infoCompra.group_id,
+      seller: infoCompra.seller,
+      valid: infoCompra.valid,
+    };
+    return validationData;
+  }
+
   static async findCompraEnviarJSON(id, quantity) {
     console.log('idCompra:', id);
     const infoCompra = await InfoCompras.findByPk(id);
-
-    console.log('infoCompra Encontrada:', infoCompra);
 
     const jsonData = {
       request_id: infoCompra.request_id,
@@ -93,7 +114,7 @@ class InfoComprasController {
       arrival_airport: infoCompra.arrival_airport,
       departure_time: infoCompra.departure_time,
       datetime: infoCompra.datetime,
-      deposit_token: '',
+      deposit_token: infoCompra.deposit_token,
       quantity,
       seller: infoCompra.seller,
     };
@@ -101,7 +122,7 @@ class InfoComprasController {
     return jsonData;
   }
 
-  static async enviarCompraMqtt(jsonData) {
+  static async enviarCompraMqtt(jsonData, validationData) {
     const mqttOptions = {
       host: process.env.BROKER_HOST,
       port: process.env.BROKER_PORT,
@@ -114,6 +135,7 @@ class InfoComprasController {
     mqttClient.on('connect', () => {
       console.log('Conectado al broker MQTT dentro de enviarCompraMqtt');
       mqttClient.publish('flights/requests', JSON.stringify(jsonData));
+      mqttClient.publish('flights/validation', JSON.stringify(validationData));
       console.log('Request enviada al broker MQTT');
       mqttClient.end();
     });
@@ -129,10 +151,10 @@ class InfoComprasController {
       console.log('request_id:', request_id);
       console.log('req.body:', req.body);
       const validationData = req.body;
-      console.log('validationData:', validationData);
       const infoCompra = await InfoCompras.findOne({
         where: { request_id },
       });
+
       const vuelo = await Flight.findOne({
         where: { id: infoCompra.flight_id },
       });
@@ -192,8 +214,6 @@ class InfoComprasController {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
-
-  
 }
 
 module.exports = InfoComprasController;
