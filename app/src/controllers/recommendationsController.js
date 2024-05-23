@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const Recommendations = require('../models/Recommendations'); // Asegúrate de tener un modelo de recomendaciones
+const axios = require('axios');
+require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
@@ -60,5 +62,17 @@ class RecommendationController {
       res.status(500).json({ error: 'Internal server error 3' });
     }
   }
+  static async getHeartbeatStatus(req, res) {
+    try {
+      const response = await axios.get(`http://producer:${process.env.PRODUCER_PORT}/heartbeat`);
+      res.status(200).json({ status: response.data.status });
+    } catch (error) {
+      console.error('Error fetching heartbeat status:', error);
+      res.status(500).json({ error: 'Error fetching heartbeat status' });
+    }
+  }
 }
+
+
+
 module.exports = RecommendationController;

@@ -92,10 +92,9 @@ async function processJob(job) {
   // Log the fetched entries
   // console.log("Last 20 entries:", flightsForWorkers);
   const recommendations = {
-    rec1: array_entries[0],
-    rec2: array_entries[1],
-    rec3: array_entries[2]
-  };
+    top_3_recommendations: array_entries
+  }
+
 
   const response = {
     user_ip: user_ip,

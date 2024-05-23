@@ -117,24 +117,7 @@ services:
     networks:
       - worker
       - app-network
-
-
-  board:
-    build: 
-      context: ./workers/worker-service/board
-      dockerfile: Dockerfile
-    networks:
-      - worker
-      - app-network
-    environment:
-      - REDIS_PORT=${REDIS_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - BACKEND_HOST= ${BACKEND_HOST}
-      - PORT= ${PORT}
-    ports:
-      - 4000:4000
-
+      
 networks:
   app-network:
     driver: bridge
