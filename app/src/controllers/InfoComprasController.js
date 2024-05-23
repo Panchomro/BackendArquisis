@@ -65,7 +65,7 @@ class InfoComprasController {
       });
 
       // Crear transaccion con webpay para el token
-      const transactionResponse = await axios.post('http://localhost:3000/create-transaction', {
+      const transactionResponse = await axios.post('http://app:3000/create-transaction', {
         id_compra: infoCompra.id,
       });
 

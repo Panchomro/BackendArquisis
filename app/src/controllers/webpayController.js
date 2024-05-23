@@ -39,7 +39,7 @@ class WebpayController {
       const amount = vuelo.price * quantity;
 
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
-      const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:3000/`); //poner aqui el path de la view de redireccion
+      const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:5173/transaction`); //poner aqui el path de la view de redireccion
 
       infoCompra.deposit_token = trx.token;
       infoCompra.save();
@@ -77,7 +77,7 @@ class WebpayController {
         res.status(200).json({ message: 'Transacción fallida' });
       }
       // 4. Envía una respuesta al canal de MQTT
-      await axios.post(`http://localhost:3000/flights/validations/${confirmedTx.buyOrder}`, {
+      await axios.post(`http://app:3000/flights/validations/${confirmedTx.buyOrder}`, {
         valid: infoCompra.valid,
       });
 
