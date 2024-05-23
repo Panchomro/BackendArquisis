@@ -79,7 +79,8 @@ services:
         limits:
           cpus: '0.50'
           memory: '512M'
-producer:
+          
+  producer:
     image: public.ecr.aws/m6b2c6w5/producer:latest
     networks:
       - worker
@@ -91,11 +92,9 @@ producer:
       - REDIS_HOST=${REDIS_HOST}
       - BACKEND_HOST=${BACKEND_HOST}
       - PORT=${PORT}
-
     ports:
       - "5000:5000"
     
-
   consumer:
     image: public.ecr.aws/m6b2c6w5/consumer:latest
     networks:
