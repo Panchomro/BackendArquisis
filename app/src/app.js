@@ -21,6 +21,7 @@ app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
 app.use(express.urlencoded({ extended: false }));
 
+
 async function syncDatabase() {
   try {
     await Flight.sync({ force: false });

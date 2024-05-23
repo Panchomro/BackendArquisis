@@ -1,81 +1,106 @@
 const mqtt = require('mqtt');
-const uuid = require('uuid-random');
+const short = require('short-uuid');
+const axios = require('axios');
 const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
+const WebpayController = require('./webpayController');
+const { info } = require('cli');
 require('dotenv').config();
 
 class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
-        // Obtener los parámetros de la consulta (query parameters)
-        const { quantity, ip, flightId } = req.body;
-        const userId = req.auth.sub;
+      // Obtener los parámetros de la consulta (query parameters)
+      const { quantity, ip, flightId } = req.body;
+      const userId = req.auth.sub;
 
-        console.log('idVuelo:', flightId);
-        console.log('user_id:', userId);
+      console.log('idVuelo:', flightId);
+      console.log('user_id:', userId);
 
-        // Obtener la fecha y hora actual en UTC
-        const fechaHoraActualUTC = new Date();
-        fechaHoraActualUTC.setHours(fechaHoraActualUTC.getHours() - 4);
-        const datetimeChileno = fechaHoraActualUTC.toISOString().slice(0, 19).replace('T', ' ');
+      // Obtener la fecha y hora actual en UTC
+      const fechaHoraActualUTC = new Date();
+      fechaHoraActualUTC.setHours(fechaHoraActualUTC.getHours() - 4);
+      const datetimeChileno = fechaHoraActualUTC.toISOString().slice(0, 19).replace('T', ' ');
 
-        // Buscar el vuelo por su ID
-        const vuelo = await Flight.findByPk(flightId);
-        if (!vuelo) {
-            throw new Error('Vuelo no encontrado');
-        }
+      // Buscar el vuelo por su ID
+      const vuelo = await Flight.findByPk(flightId);
+      if (!vuelo) {
+        throw new Error('Vuelo no encontrado');
+      }
 
-        // Ajustar la hora de salida del vuelo
-        const departureTimeCL = new Date(vuelo.departure_airport_time);
-        departureTimeCL.setHours(departureTimeCL.getHours() - 4);
+      // Ajustar la hora de salida del vuelo
+      const departureTimeCL = new Date(vuelo.departure_airport_time);
+      departureTimeCL.setHours(departureTimeCL.getHours() - 4);
 
-        // Construir la cadena de fecha y hora de salida
-        const year = departureTimeCL.getFullYear();
-        const month = String(departureTimeCL.getMonth() + 1).padStart(2, '0');
-        const day = String(departureTimeCL.getDate()).padStart(2, '0');
-        const hours = String(departureTimeCL.getHours()).padStart(2, '0');
-        const minutes = String(departureTimeCL.getMinutes()).padStart(2, '0');
-        const departureTimeChileno = `${year}-${month}-${day} ${hours}:${minutes}`;
+      // Construir la cadena de fecha y hora de salida
+      const year = departureTimeCL.getFullYear();
+      const month = String(departureTimeCL.getMonth() + 1).padStart(2, '0');
+      const day = String(departureTimeCL.getDate()).padStart(2, '0');
+      const hours = String(departureTimeCL.getHours()).padStart(2, '0');
+      const minutes = String(departureTimeCL.getMinutes()).padStart(2, '0');
+      const departureTimeChileno = `${year}-${month}-${day} ${hours}:${minutes}`;
 
-        // Crear un ID de solicitud único
-        const requestId = uuid();
+      // Crear un ID de solicitud único
+      const translator = short();
+      const requestId = translator.new();
 
-        // Calcular el precio total
-        const priceTotal = vuelo.price * quantity;
+      // Calcular el precio total
+      const priceTotal = vuelo.price * quantity;
 
-        // Crear el registro de compra
-        const infoCompra = await InfoCompras.create({
-            request_id: requestId,
-            flight_id: vuelo.id,
-            user_id: userId,
-            airline_logo: vuelo.airline_logo,
-            group_id: '13',
-            departure_airport: vuelo.departure_airport_id,
-            arrival_airport: vuelo.arrival_airport_id,
-            departure_time: departureTimeChileno,
-            datetime: datetimeChileno,
-            totalPrice: priceTotal,
-            quantity,
-            seller: 0,
-            isValidated: false,
-            valid: false,
-            user_ip: ip,
-        });
+      // Crear el registro de compra
+      const infoCompra = await InfoCompras.create({
+        request_id: requestId,
+        flight_id: vuelo.id,
+        user_id: userId,
+        airline_logo: vuelo.airline_logo,
+        group_id: '13',
+        departure_airport: vuelo.departure_airport_id,
+        arrival_airport: vuelo.arrival_airport_id,
+        departure_time: departureTimeChileno,
+        datetime: datetimeChileno,
+        totalPrice: priceTotal,
+        quantity,
+        seller: 0,
+        isValidated: false,
+        valid: false,
+        user_ip: ip,
+      });
 
-        console.log('infocompra:', infoCompra);
+      console.log('Compra creada:', infoCompra);
+      // Crear transaccion con webpay para el token
+      const transactionResponse = await axios.post('http://app:3000/create-transaction', {
+        id_compra: infoCompra.id,
+      });
 
-        // Enviar los datos de la compra a través de MQTT
-        const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
-        InfoComprasController.enviarCompraMqtt(jsonData);
+      console.log('transactionResponse:', transactionResponse.data);
 
-        // Enviar una respuesta exitosa
-        res.status(200).json({ message: 'Compra creada exitosamente' });
+      if (transactionResponse.status !== 200) {
+        throw new Error('Error al crear transacción con Webpay');
+      }
+
+      // Enviar los datos de la compra a través de MQTT
+      const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
+      const validationData = await InfoComprasController.createValidationData(infoCompra.id);
+      InfoComprasController.enviarCompraMqtt(jsonData, validationData);
+
+      // Enviar una respuesta exitosa
+      res.status(200).json(transactionResponse.data);
     } catch (error) {
-        console.error('Error al crear compra desde MQTT:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+      console.error('Error al crear compra desde MQTT:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
 
+  static async createValidationData(id) {
+    const infoCompra = await InfoCompras.findByPk(id);
+    const validationData = {
+      request_id: infoCompra.request_id,
+      group_id: infoCompra.group_id,
+      seller: infoCompra.seller,
+      valid: infoCompra.valid,
+    };
+    return validationData;
+  }
 
   static async findCompraEnviarJSON(id, quantity) {
     console.log('idCompra:', id);
@@ -88,7 +113,7 @@ class InfoComprasController {
       arrival_airport: infoCompra.arrival_airport,
       departure_time: infoCompra.departure_time,
       datetime: infoCompra.datetime,
-      deposit_token: '',
+      deposit_token: infoCompra.deposit_token,
       quantity,
       seller: infoCompra.seller,
     };
@@ -96,7 +121,7 @@ class InfoComprasController {
     return jsonData;
   }
 
-  static async enviarCompraMqtt(jsonData) {
+  static async enviarCompraMqtt(jsonData, validationData) {
     const mqttOptions = {
       host: process.env.BROKER_HOST,
       port: process.env.BROKER_PORT,
@@ -109,6 +134,7 @@ class InfoComprasController {
     mqttClient.on('connect', () => {
       console.log('Conectado al broker MQTT dentro de enviarCompraMqtt');
       mqttClient.publish('flights/requests', JSON.stringify(jsonData));
+      mqttClient.publish('flights/validation', JSON.stringify(validationData));
       console.log('Request enviada al broker MQTT');
       mqttClient.end();
     });
@@ -127,6 +153,7 @@ class InfoComprasController {
       const infoCompra = await InfoCompras.findOne({
         where: { request_id },
       });
+
       const vuelo = await Flight.findOne({
         where: { id: infoCompra.flight_id },
       });
@@ -161,19 +188,19 @@ class InfoComprasController {
       // Acceder al userId desde el JWT decodificado
       const userId = req.auth.sub;
       console.log('userId:', userId);
-  
+
       const infoCompras = await InfoCompras.findAll({
         where: { user_id: userId },
       });
       console.log('infoCompras:', infoCompras);
-  
+
       res.status(200).json(infoCompras);
     } catch (error) {
       console.error('Error al buscar historial de InfoCompras:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
-  
+
 }
 
 module.exports = InfoComprasController;
