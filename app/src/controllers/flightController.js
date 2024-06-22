@@ -33,6 +33,7 @@ class FlightController {
           currency,
           airlineLogo,
           quantity: 90,
+          reserved: false,
         });
       });
 
