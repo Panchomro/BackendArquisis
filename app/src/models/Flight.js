@@ -65,6 +65,10 @@ const Flight = sequelize.define('Flight', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  reserved: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
 }, {
   timestamps: true,
   tableName: 'infoflights',
