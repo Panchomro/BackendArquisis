@@ -48,24 +48,49 @@ class InfoComprasController {
       // Calcular el precio total
       const priceTotal = vuelo.price * quantity;
 
+      const isAdmin = false;
+      let infoCompra;
+
       // Crear el registro de compra
-      const infoCompra = await InfoCompras.create({
-        request_id: requestId,
-        flight_id: vuelo.id,
-        user_id: userId,
-        airline_logo: vuelo.airline_logo,
-        group_id: '13',
-        departure_airport: vuelo.departure_airport_id,
-        arrival_airport: vuelo.arrival_airport_id,
-        departure_time: departureTimeChileno,
-        datetime: datetimeChileno,
-        totalPrice: priceTotal,
-        quantity,
-        seller: 0,
-        isValidated: false,
-        valid: false,
-        user_ip: ip,
-      });
+      if (typeof isAdmin === 'undefined' || !isAdmin) {
+        const infoCompra = await InfoCompras.create({
+          request_id: requestId,
+          flight_id: vuelo.id,
+          user_id: userId,
+          airline_logo: vuelo.airline_logo,
+          group_id: '13',
+          departure_airport: vuelo.departure_airport_id,
+          arrival_airport: vuelo.arrival_airport_id,
+          departure_time: departureTimeChileno,
+          datetime: datetimeChileno,
+          totalPrice: priceTotal,
+          quantity,
+          seller: 0,
+          isValidated: false,
+          valid: false,
+          user_ip: ip,
+          reserved: false,
+        });
+      } else {
+        const infoCompra = await InfoCompras.create({
+          request_id: requestId,
+          flight_id: vuelo.id,
+          user_id: userId,
+          airline_logo: vuelo.airline_logo,
+          group_id: '13',
+          departure_airport: vuelo.departure_airport_id,
+          arrival_airport: vuelo.arrival_airport_id,
+          departure_time: departureTimeChileno,
+          datetime: datetimeChileno,
+          totalPrice: priceTotal,
+          quantity,
+          seller: 13,
+          isValidated: false,
+          valid: false,
+          user_ip: ip,
+          reserved: true,
+        });
+      }
 
       console.log('Compra creada:', infoCompra);
       // Crear transaccion con webpay para el token
@@ -81,9 +106,7 @@ class InfoComprasController {
 
       // Enviar los datos de la compra a través de MQTT
       const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
-      const validationData = await InfoComprasController.createValidationData(infoCompra.id);
-      InfoComprasController.enviarCompraMqtt(jsonData, validationData);
-
+      InfoComprasController.enviarCompraMqtt(jsonData, 'request');
       // Enviar una respuesta exitosa
       res.status(200).json(transactionResponse.data);
     } catch (error) {
@@ -122,7 +145,7 @@ class InfoComprasController {
     return jsonData;
   }
 
-  static async enviarCompraMqtt(jsonData, validationData) {
+  static async enviarCompraMqtt(data, type) {
     const mqttOptions = {
       host: process.env.BROKER_HOST,
       port: process.env.BROKER_PORT,
@@ -134,8 +157,11 @@ class InfoComprasController {
 
     mqttClient.on('connect', () => {
       console.log('Conectado al broker MQTT dentro de enviarCompraMqtt');
-      mqttClient.publish('flights/requests', JSON.stringify(jsonData));
-      mqttClient.publish('flights/validation', JSON.stringify(validationData));
+      if (type === 'request') {
+        mqttClient.publish('flights/requests', JSON.stringify(data));
+      } else if (type === 'validation') {
+        mqttClient.publish('flights/validation', JSON.stringify(data));
+      }
       console.log('Request enviada al broker MQTT');
       mqttClient.end();
     });
@@ -172,7 +198,7 @@ class InfoComprasController {
         res.status(200).json({ message: 'Validación exitosa, compra aprobada' });
         // Una vez confirmada la compra se envía la información a la cola de RabbitMQ con el ip
         // y la información de la compra
-        
+
         // });
       } else if (validationData.valid === false) {
         infoCompra.isValidated = true;
