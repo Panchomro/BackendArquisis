@@ -5,7 +5,6 @@ const short = require('short-uuid');
 const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
 const WebpayController = require('./webpayController');
-const { info } = require('cli');
 require('dotenv').config();
 
 class InfoComprasController {
@@ -83,6 +82,10 @@ class InfoComprasController {
       const jsonData = await InfoComprasController.findCompraEnviarJSON(infoCompra.id, quantity);
       InfoComprasController.enviarCompraMqtt(jsonData, 'request');
 
+      // Actualizar la cantidad de pasajes reservados en la tabla de vuelos
+      vuelo.reserved += quantity;
+      await vuelo.save();
+
       // Enviar una respuesta exitosa
       res.status(200).json(transactionResponse.data);
     } catch (error) {
@@ -116,6 +119,7 @@ class InfoComprasController {
       deposit_token: infoCompra.deposit_token,
       quantity,
       seller: infoCompra.seller,
+      reserved: infoCompra.reserved,
     };
 
     return jsonData;
@@ -210,3 +214,4 @@ class InfoComprasController {
 }
 
 module.exports = InfoComprasController;
+
