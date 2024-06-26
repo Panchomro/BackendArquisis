@@ -6,11 +6,11 @@ const router = express.Router();
 
 router.get('/flights/reserved/:id', AdminController.getReservedFlightById);
 
-router.get('/flights/availability/:id', AdminController.getAvailableFlightById);
+router.get('/flights/availability/:id', AdminController.getAvailability);
 
-router.patch('/flights/availability/:id', AdminController.updateAvailableFlightById);
+router.patch('/flights/availability/:id', AdminController.changeAvailability);
 
-router.post('/buy/reserved', checkJwt, AdminController.buyReservedFlight);
+router.post('/buyReserved', checkJwt, AdminController.buyReserved);
 
 router.post('/reserved/confirm-transaction', checkJwt, AdminController.confirmTransaction);
 

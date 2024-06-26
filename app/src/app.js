@@ -6,6 +6,7 @@ const express = require('express');
 const flightRoutes = require('./routes/flightRoutes');
 const infoComprasRoutes = require('./routes/infoComprasRoutes');
 const recommendationsRoutes = require('./routes/recommendationsRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const Flight = require('./models/Flight');
 const InfoCompras = require('./models/InfoCompras');
@@ -22,6 +23,7 @@ app.use(cors());
 app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
 app.use('/', recommendationsRoutes);
+app.use('/', adminRoutes);
 app.use(express.urlencoded({ extended: false }));
 
 

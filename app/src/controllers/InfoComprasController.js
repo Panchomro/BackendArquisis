@@ -11,7 +11,7 @@ require('dotenv').config();
 class InfoComprasController {
   static async createInfoCompras(req, res) {
     try {
-      const { quantity, ip, flightId } = req.body;
+      const { quantity, ip, flightId, isAdmin } = req.body;
       const userId = req.auth.sub;
 
       console.log('idVuelo:', flightId);
@@ -40,10 +40,12 @@ class InfoComprasController {
       const requestId = translator.new();
       const priceTotal = vuelo.price * quantity;
 
-      const isAdmin = false; // Esta variable depende de verficación admin por token
+      // const isAdmin = false; // Esta variable depende de verficación admin por token
       let infoCompra;
 
-      if (typeof isAdmin === 'undefined' || !isAdmin) {
+      if (!isAdmin) {
+        console.log('No es admin');
+        console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
         infoCompra = await InfoCompras.create({
           request_id: requestId,
           flight_id: vuelo.id,
@@ -63,6 +65,8 @@ class InfoComprasController {
           reserved: false,
         });
       } else {
+        console.log('Es admin');
+        console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
         infoCompra = await InfoCompras.create({
           request_id: requestId,
           flight_id: vuelo.id,
