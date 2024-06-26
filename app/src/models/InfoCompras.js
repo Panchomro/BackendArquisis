@@ -72,6 +72,16 @@ const InfoCompras = sequelize.define('InfoCompras', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  reserved: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+  available: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
 }, {
   timestamps: false,
   tableName: 'InfoCompras',

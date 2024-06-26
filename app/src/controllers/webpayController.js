@@ -38,7 +38,7 @@ class WebpayController {
       console.log('amount:', amount);
 
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
-      const trx = await tx.create(buyOrder, groupId, amount, `https://web.panchomro.me/transaction`); //poner aqui el path de la view de redireccion
+      const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:5173/transaction`); //poner aqui el path de la view de redireccion
 
       infoCompra.deposit_token = trx.token;
       console.log('deposit_token:', trx.token);
@@ -64,7 +64,7 @@ class WebpayController {
       // 2. Confirma la transacción de WebPay
       const tx = new WebpayPlus.Transaction(new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration));
       const confirmedTx = await tx.commit(token_ws);
-      
+
 
       // 3. Actualiza el estado de la compra en tu base de datos
       const infoCompra = await InfoCompras.findOne({
@@ -93,6 +93,7 @@ class WebpayController {
       // 4. Envía una respuesta al canal de MQTT
       const validationData = await InfoComprasController.createValidationData(infoCompra.id);
       InfoComprasController.enviarCompraMqtt(validationData, 'validation');
+
     } catch (error) {
       console.error('Error confirming transaction:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
