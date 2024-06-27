@@ -11,5 +11,8 @@ router.get('/flights/:id', FlightController.getFlightById);
 
 router.get('/forWorkers', FlightController.getFlightsForWorkers);
 
+router.get('/flights/check-availability/:flightId', FlightController.checkFlightAvailability);
+
+
 
 module.exports = router;

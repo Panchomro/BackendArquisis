@@ -8,61 +8,48 @@ const Flight = require('../models/Flight');
 require('dotenv').config();
 
 class AdminController {
-  static async getReservedFlightById(req, res) { // Recibe params flightid sacado de compra
+  static async getReservedFlightById(req, res) {
     const { id } = req.params;
     try {
-      const { infoComprasAdmin, count } = await InfoCompras.findAndCountAll({
+      const infoCompra = await InfoCompras.findOne({
         where: {
           reserved: true,
           available: true,
           flight_id: id,
-        }, // Filtrar por el ID del usuario
+        }, 
       });
       let foundFlight = false;
 
-      if (count === 0) {
+      if (!infoCompra) {
         res.status(200).json({ error: 'Vuelo no cuenta con reserva disponible' });
       } else {
         const discountRate = 0.15;
-        const infoCompraPromises = infoComprasAdmin.forEach(async (infoCompra) => {
-          if (infoCompra.quantity > 0) {
-            if (infoCompra.flight_id === id) {
-              foundFlight = true;
-              const initialFlight = await Flight.findByPk(infoCompra.flight_id);
-              const reservedFlight = {
-                id: initialFlight.id,
-                departure_airport_name: initialFlight.departure_airport_name,
-                departure_airport_id: initialFlight.departure_airport_id,
-                departure_airport_time: initialFlight.departure_airport_time,
-                arrival_airport_name: initialFlight.arrival_airport_name,
-                arrival_airport_id: initialFlight.arrival_airport_id,
-                arrival_airport_time: initialFlight.arrival_airport_time,
-                duration: initialFlight.duration,
-                airplane: initialFlight.airplane,
-                airline: initialFlight.airline,
-                airline_logo: initialFlight.airline_logo,
-                carbon_emissions: initialFlight.carbon_emissions,
-                price: initialFlight.price * (1 - discountRate),
-                currency: initialFlight.currency,
-                airlineLogo: initialFlight.airlineLogo,
-                quantity: infoCompra.quantity,
-              };
-              res.status(200).json(reservedFlight);
-            }
-          }
-        });
-
-        try {
-          await Promise.all(infoCompraPromises);
-          console.log('Vuelos reservados checkeados exitosamente');
-        } catch (error) {
-          console.error('Error al esperar las promesas:', error);
-          // Manejar el error según sea necesario
+        if (infoCompra.quantity > 0) {
+          foundFlight = true;
+          const initialFlight = await Flight.findByPk(infoCompra.flight_id);
+          const reservedFlight = {
+            id: initialFlight.id,
+            departure_airport_name: initialFlight.departure_airport_name,
+            departure_airport_id: initialFlight.departure_airport_id,
+            departure_airport_time: initialFlight.departure_airport_time,
+            arrival_airport_name: initialFlight.arrival_airport_name,
+            arrival_airport_id: initialFlight.arrival_airport_id,
+            arrival_airport_time: initialFlight.arrival_airport_time,
+            duration: initialFlight.duration,
+            airplane: initialFlight.airplane,
+            airline: initialFlight.airline,
+            airline_logo: initialFlight.airline_logo,
+            carbon_emissions: initialFlight.carbon_emissions,
+            price: initialFlight.price * (1 - discountRate),
+            currency: initialFlight.currency,
+            airlineLogo: initialFlight.airlineLogo,
+            quantity: infoCompra.quantity,
+          };
+          return res.status(200).json(reservedFlight);
         }
-      }
-
-      if (!foundFlight) {
-        res.status(200).json({ message: 'Vuelo no tiene pasajes reservados disponibles' });
+        if (!foundFlight) {
+          res.status(200).json({ message: 'Vuelo no tiene pasajes reservados disponibles' });
+        }
       }
     } catch (error) {
       console.error('Error al entregar vuelo reservado', error);
@@ -300,6 +287,42 @@ class AdminController {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
+
+  static async getAvailableReservedFlights(req, res) {
+    try {
+      const availableReservedFlights = await InfoCompras.findAll({
+        where: { reserved: true, available: true },
+        include: [Flight]
+      });
+
+      if (availableReservedFlights.length === 0) {
+        return res.status(404).json({ error: 'No hay vuelos reservados disponibles' });
+      }
+
+      const flightsWithDetails = availableReservedFlights.map(infoCompra => ({
+        id: infoCompra.flight.id,
+        departure_airport_name: infoCompra.flight.departure_airport_name,
+        departure_airport_time: infoCompra.flight.departure_airport_time,
+        arrival_airport_name: infoCompra.flight.arrival_airport_name,
+        arrival_airport_time: infoCompra.flight.arrival_airport_time,
+        duration: infoCompra.flight.duration,
+        airplane: infoCompra.flight.airplane,
+        airline: infoCompra.flight.airline,
+        airline_logo: infoCompra.flight.airline_logo,
+        carbon_emissions: infoCompra.flight.carbon_emissions,
+        price: infoCompra.flight.price * 0.85, // Apply discount
+        currency: infoCompra.flight.currency,
+        quantity: infoCompra.quantity,
+      }));
+
+      res.status(200).json(flightsWithDetails);
+    } catch (error) {
+      console.error('Error fetching available reserved flights:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  
 
   
 
