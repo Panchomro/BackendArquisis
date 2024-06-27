@@ -4,7 +4,6 @@ const { Op } = require('sequelize');
 const short = require('short-uuid');
 const InfoCompras = require('../models/InfoCompras');
 const Flight = require('../models/Flight');
-const WebpayController = require('./webpayController');
 const { info } = require('cli');
 require('dotenv').config();
 

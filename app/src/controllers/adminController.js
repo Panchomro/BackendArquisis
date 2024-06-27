@@ -91,24 +91,20 @@ class AdminController {
   static async changeAvailability(req, res) {
     const { id } = req.params;
     try {
-      const { infoComprasAdmin, count } = await InfoCompras.findAndCountAll({
+      const infoCompra = await InfoCompras.findOne({
         where: {
           reserved: true,
           flight_id: id,
         },
       });
-
-      if (!infoComprasAdmin) {
+  
+      if (!infoCompra) {
         return res.status(404).json({ error: 'Vuelo no encontrado' });
       }
-
-      if (count === 0) {
-        res.status(200).json({ error: 'Vuelo no cuenta con reserva disponible' });
-      } else if (count === 1) {
-        infoComprasAdmin.availability = !infoComprasAdmin.availability;
-        infoComprasAdmin.save();
-        res.status(200).json({message: 'Disponibilidad del vuelo cambiada exitosamente'});
-      }
+  
+      infoCompra.available = !infoCompra.available;
+      await infoCompra.save();
+      res.status(200).json({ message: 'Disponibilidad del vuelo cambiada exitosamente' });
     } catch (error) {
       console.error('Error al cambiar la disponibilidad del vuelo:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -284,6 +280,23 @@ class AdminController {
       console.log(`Se actualizó el atributo 'valid' de InfoCompras con request_id ${infoCompra.request_id}`);
     } catch (error) {
       console.error('Error al obtener compras:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+  // Nueva función para obtener todos los vuelos reservados
+  static async getAllReservedFlights(req, res) {
+    try {
+      const reservedFlights = await InfoCompras.findAll({
+        where: { reserved: true }
+      });
+
+      if (reservedFlights.length === 0) {
+        return res.status(404).json({ error: 'No hay vuelos reservados' });
+      }
+
+      res.status(200).json(reservedFlights);
+    } catch (error) {
+      console.error('Error fetching reserved flights:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
