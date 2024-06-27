@@ -1,5 +1,7 @@
 const { Op } = require('sequelize');
 const Flight = require('../models/Flight');
+const InfoCompras = require('../models/InfoCompras');
+
 
 class FlightController {
   static async createFlight(req, res) {
@@ -155,6 +157,28 @@ class FlightController {
 
       // Responder con el mensaje de error específico
       res.status(500).json({ error: 'Error interno del servidor', details: error.message });
+    }
+  }
+
+  static async checkFlightAvailability(req, res) {
+    try {
+      const { flightId } = req.params;
+      const infoCompra = await InfoCompras.findOne({
+        where: {
+          flight_id: flightId,
+          available: true,
+          reserved: true
+        }
+      });
+
+      if (infoCompra) {
+        res.status(200).json({ available: true });
+      } else {
+        res.status(200).json({ available: false });
+      }
+    } catch (error) {
+      console.error('Error checking flight availability:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   }
 }
