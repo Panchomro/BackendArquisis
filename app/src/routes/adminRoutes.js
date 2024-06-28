@@ -20,7 +20,7 @@ router.post('/buyReserved', checkJwt, AdminController.buyReserved);
 router.post('/reserved/confirm-transaction', checkJwt, AdminController.confirmTransaction);
 
 // Ruta para obtener todos los vuelos reservados
-router.get('/admin/reserved-flights',checkJwt, AdminController.getAllReservedFlights);
+router.get('/admin/reserved-flights', AdminController.getAllReservedFlights);
 
 router.get('/availableReservedFlights', AdminController.getAvailableReservedFlights);
 
