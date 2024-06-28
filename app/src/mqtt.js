@@ -9,6 +9,7 @@ const PASSWORD = process.env.BROKER_PASSWORD;
 const TOPICFlights = 'flights/info';
 // const TOPICRequest = 'flights/requests';
 const TOPICValidation = 'flights/validation';
+const TOPICAuctions = 'flights/auctions';
 
 const mqttClient = mqtt.connect(`mqtt://${HOST}:${PORT_MQTT}`, {
   username: USER,
@@ -30,6 +31,13 @@ mqttClient.on('connect', () => {
       console.error('Error al suscribirse al tópico', err);
     } else {
       console.log('Suscripción exitosa al tópico flights/validation');
+    }
+  });
+  mqttClient.subscribe(TOPICAuctions, (err) => {
+    if (err) {
+      console.error('Error al suscribirse al tópico', err);
+    } else {
+      console.log('Suscripción exitosa al tópico flights/auctions');
     }
   });
 });
@@ -57,6 +65,28 @@ mqttClient.on('message', async (topic, message) => {
       axios.post(`http://app:3000/flights/validations/${validationData.request_id}`, validationData).then((response) => {
         // Handle successful response
         console.log('Datos de validación enviados a la API', response.data);
+      })
+        .catch((error) => {
+          // Handle error
+          console.error('Error fetching data:', error);
+        });
+    }
+  } else if (topic === TOPICAuctions) {
+    const auctionData = JSON.parse(message);
+    console.log('Datos de subasta mqtt recibidos:', auctionData);
+    if (auctionData.type === 'offer') { //falta terminar
+      axios.post('http://app:3000/recieveOffer', auctionData).then((response) => {
+        // Handle successful response
+        console.log('Datos de subasta enviados a la API', response.data);
+      })
+        .catch((error) => {
+          // Handle error
+          console.error('Error fetching data:', error);
+        });
+    } else {
+      axios.post('http://app:3000/recieveBid', auctionData).then((response) => {
+        // Handle successful response
+        console.log('Datos de subasta enviados a la API', response.data);
       })
         .catch((error) => {
           // Handle error

@@ -7,10 +7,12 @@ const flightRoutes = require('./routes/flightRoutes');
 const infoComprasRoutes = require('./routes/infoComprasRoutes');
 const recommendationsRoutes = require('./routes/recommendationsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const offerRoutes = require('./routes/offerRoutes');
 
 const Flight = require('./models/Flight');
 const InfoCompras = require('./models/InfoCompras');
 const Recommendations = require('./models/Recommendations');
+const Offers = require('./models/Offers');
 
 const app = express();
 
@@ -24,6 +26,7 @@ app.use('/', flightRoutes);
 app.use('/', infoComprasRoutes);
 app.use('/', recommendationsRoutes);
 app.use('/', adminRoutes);
+app.use('/', offerRoutes);
 app.use(express.urlencoded({ extended: false }));
 
 
@@ -32,6 +35,7 @@ async function syncDatabase() {
     await Flight.sync({ force: false });
     await InfoCompras.sync({ force: false });
     await Recommendations.sync({ force: false });
+    await Offers.sync({ force: false });
     console.log('Modelo sincronizado con la base de datos');
   } catch (error) {
     console.error('Error al sincronizar el modelo con la base de datos:', error);

@@ -16,7 +16,7 @@ class AdminController {
           reserved: true,
           available: true,
           flight_id: id,
-        }, 
+        },
       });
       let foundFlight = false;
 
@@ -88,7 +88,6 @@ class AdminController {
       if (!infoCompra) {
         return res.status(404).json({ error: 'Vuelo no encontrado' });
       }
-  
       infoCompra.available = !infoCompra.available;
       await infoCompra.save();
       res.status(200).json({ message: 'Disponibilidad del vuelo cambiada exitosamente' });
@@ -324,7 +323,23 @@ class AdminController {
 
   
 
-  
+  // Nueva función para obtener todos los vuelos reservados
+  static async getAllReservedFlights(req, res) {
+    try {
+      const reservedFlights = await InfoCompras.findAll({
+        where: { reserved: true }
+      });
+
+      if (reservedFlights.length === 0) {
+        return res.status(404).json({ error: 'No hay vuelos reservados' });
+      }
+
+      res.status(200).json(reservedFlights);
+    } catch (error) {
+      console.error('Error fetching reserved flights:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
 
 }
 
