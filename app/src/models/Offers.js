@@ -2,29 +2,17 @@ const { Sequelize, DataTypes } = require('sequelize');
 
 const sequelize = new Sequelize('postgres://lukasguthrie:204290482@db:5432/e0arquisis');
 
-const InfoCompras = sequelize.define('InfoCompras', {
+const Offers = sequelize.define('Offers', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  request_id: {
+  auction_id: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  user_id: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  airline_logo: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  flight_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  group_id: {
+  proposal_id: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -40,51 +28,34 @@ const InfoCompras = sequelize.define('InfoCompras', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  datetime: {
+  airline: {
     type: DataTypes.STRING,
     allowNull: false,
-  },
-  deposit_token: {
-    type: DataTypes.STRING,
-    allowNull: true,
   },
   quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  seller: {
+  group_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  isValidated: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
-  valid: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
-  totalPrice: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  user_ip: {
+  type: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  reserved: {
-    type: DataTypes.BOOLEAN,
+  flight_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: false,
   },
-  available: {
+  isFinished: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false,
   },
 }, {
   timestamps: false,
-  tableName: 'InfoCompras',
+  tableName: 'Offers',
 });
 
-module.exports = InfoCompras;
+module.exports = Offers;

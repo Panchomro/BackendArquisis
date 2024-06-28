@@ -99,7 +99,12 @@ class WebpayController {
 
       console.log('este es infoCompra.id:', infoCompra.id);
 
-      const validationData = await InfoComprasController.createValidationData(infoCompra.id);
+      const validationData = {
+        request_id: infoCompra.request_id,
+        group_id: infoCompra.group_id,
+        seller: infoCompra.seller,
+        valid: infoCompra.valid,
+      };
       console.log('Validation data:', validationData);
       InfoComprasController.enviarCompraMqtt(validationData, 'validation');
     } catch (error) {
@@ -110,4 +115,3 @@ class WebpayController {
 }
 
 module.exports = WebpayController;
-

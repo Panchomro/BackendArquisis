@@ -157,6 +157,8 @@ class InfoComprasController {
         mqttClient.publish('flights/requests', JSON.stringify(data));
       } else if (type === 'validation') {
         mqttClient.publish('flights/validation', JSON.stringify(data));
+      } else if (type === 'auction') {
+        mqttClient.publish('flights/auctions', JSON.stringify(data));
       }
       console.log('Request enviada al broker MQTT');
       mqttClient.end();
