@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-const sequelize = new Sequelize('postgres://panchomro:Arya1234@db:5432/e0arquisis');
+const sequelize = new Sequelize('postgres://srasmussenc:8850casan@db:5432/e0arquisis');
 
 const InfoCompras = sequelize.define('InfoCompras', {
   id: {
@@ -68,9 +68,23 @@ const InfoCompras = sequelize.define('InfoCompras', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  airline:{
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   user_ip: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  reserved: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+  available: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
 }, {
   timestamps: false,

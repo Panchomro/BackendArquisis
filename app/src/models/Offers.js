@@ -1,43 +1,30 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
 const sequelize = new Sequelize('postgres://srasmussenc:8850casan@db:5432/e0arquisis');
-// const db = require('../db');
 
-const Flight = sequelize.define('Flight', {
+const Offers = sequelize.define('Offers', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  departure_airport_name: {
+  auction_id: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  departure_airport_id: {
+  proposal_id: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  departure_airport_time: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  arrival_airport_name: {
+  departure_airport: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  arrival_airport_id: {
+  arrival_airport: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  arrival_airport_time: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  duration: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  airplane: {
+  departure_time: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -45,29 +32,30 @@ const Flight = sequelize.define('Flight', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  airline_logo: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  carbon_emissions: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  price: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  currency: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  group_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  flight_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  isFinished: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
 }, {
-  timestamps: true,
-  tableName: 'infoflights',
+  timestamps: false,
+  tableName: 'Offers',
 });
 
-module.exports = Flight;
+module.exports = Offers;
