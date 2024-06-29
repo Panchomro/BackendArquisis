@@ -24,6 +24,8 @@ router.get('/admin/reserved-flights', AdminController.getAllReservedFlights);
 
 router.get('/availableReservedFlights', AdminController.getAvailableReservedFlights);
 
+router.post('/create-transaction-reserved', AdminController.createTransactionReserved);
+
 
 
 module.exports = router;

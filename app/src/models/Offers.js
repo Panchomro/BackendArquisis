@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-const sequelize = new Sequelize('postgres://lukasguthrie:204290482@db:5432/e0arquisis');
+const sequelize = new Sequelize('postgres://srasmussenc:8850casan@db:5432/e0arquisis');
 
 const Offers = sequelize.define('Offers', {
   id: {

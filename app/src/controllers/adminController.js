@@ -141,7 +141,7 @@ class AdminController {
       const requestId = translator.new();
 
       // Calcular el precio total
-      const priceTotal = reservedBuyOrder.totalPrice * 0.85;
+      const priceTotal = Math.round(reservedBuyOrder.totalPrice * 0.85);
 
       const infoCompra = await InfoCompras.create({
         request_id: requestId,
@@ -164,7 +164,7 @@ class AdminController {
 
       console.log('Compra creada:', infoCompra);
       // Crear transaccion con webpay para el token
-      const transactionResponse = await axios.post('http://app:3000/create-transaction', {
+      const transactionResponse = await axios.post('http://app:3000/create-transaction-reserved', {
         id_compra: infoCompra.id,
       });
 
@@ -173,6 +173,12 @@ class AdminController {
       if (transactionResponse.status !== 200) {
         throw new Error('Error al crear transacción con Webpay');
       }
+      reservedBuyOrder.quantity -= quantity;
+      if (reservedBuyOrder.quantity <= 0) {
+        reservedBuyOrder.reserved = false;
+        reservedBuyOrder.available = false;
+      }
+      reservedBuyOrder.save();
 
       // Enviar una respuesta exitosa
       res.status(200).json(transactionResponse.data);
@@ -200,8 +206,23 @@ class AdminController {
         where: { request_id: confirmedTx.buy_order },
       });
       infoCompra.isValidated = true;
+      // console.log('infoCompra.flight_id:', infoCompra.flight_id);
+      // console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
       if (confirmedTx.response_code === 0) {
         infoCompra.valid = true;
+        // const infoCompraAdmin = await InfoCompras.findOne({
+        //   where: {
+        //     flight_id: infoCompra.flight_id,
+        //     reserved: true,
+        //     // available: true,
+        //   },
+        // });
+        // console.log('infoCompraAdmin.flight_id:', infoCompraAdmin.flight_id);
+        // infoCompraAdmin.quantity -= infoCompra.quantity;
+        // if (infoCompraAdmin.quantity <= 0) {
+        //   infoCompraAdmin.available = false;
+        // }
+        // infoCompraAdmin.save();
         infoCompra.save();
         //Gatillante workers
         try {
@@ -337,6 +358,50 @@ class AdminController {
       res.status(200).json(reservedFlights);
     } catch (error) {
       console.error('Error fetching reserved flights:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+  static async createTransactionReserved(req, res) {
+    try {
+      const { id_compra } = req.body;
+      console.log('id_compra:', id_compra);
+
+      const infoCompra = await InfoCompras.findOne({
+        where: { id: id_compra},
+      });
+
+      if (!infoCompra) {
+        throw new Error('Compra no encontrada');
+      }
+
+      const groupId = infoCompra.group_id;
+      const flightId = infoCompra.flight_id;
+      console.log('groupId:', groupId);
+
+      const buyOrder = infoCompra.request_id;
+      console.log('buyOrder:', buyOrder);
+
+      const vuelo = await Flight.findByPk(flightId);
+      if (!vuelo) {
+        throw new Error('Vuelo no encontrado');
+      }
+
+      const amount = infoCompra.totalPrice;
+      console.log('amount:', amount);
+
+      const tx = new WebpayPlus.Transaction(
+        new Options(IntegrationCommerceCodes.WEBPAY_PLUS, IntegrationApiKeys.WEBPAY, Environment.Integration)
+      );
+      const trx = await tx.create(buyOrder, groupId, amount, `http://localhost:5173/transaction-reserved`);
+
+      infoCompra.deposit_token = trx.token;
+      console.log('deposit_token:', trx.token);
+      await infoCompra.save();
+
+      res.status(200).json({ url: trx.url, token: trx.token });
+    } catch (error) {
+      console.log('Error al crear transacción:', error);
+      console.error('Error creating transaction:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
