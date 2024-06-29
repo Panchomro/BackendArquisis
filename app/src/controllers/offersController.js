@@ -18,41 +18,43 @@ class OfferController {
         auction_id, proposal_id, departure_airport, arrival_airport,
         departure_time, airline, quantity, group_id, type,
       } = mqttData;
+      if (group_id !== '13') {
 
-      //Obtener el vuelo correspondiente
-      const flightOffered = await Flight.findOne({
-        where: {
-          departure_airport_name: departure_airport,
-          arrival_airport_name: arrival_airport,
-          departure_airport_time: departure_time,
+        //Obtener el vuelo correspondiente
+        const flightOffered = await Flight.findOne({
+          where: {
+            departure_airport_name: departure_airport,
+            arrival_airport_name: arrival_airport,
+            departure_airport_time: departure_time,
+            airline,
+          },
+        });
+
+        if (!flightOffered) {
+          throw new Error('Vuelo no encontrado');
+        }
+
+        const flightId = flightOffered.id;
+
+        // Crear un documento de vuelo en la base de datos para cada vuelo
+        const newOffer = await Offers.create({
+          auction_id,
+          proposal_id,
+          departure_airport,
+          arrival_airport,
+          departure_time,
           airline,
-        },
-      });
+          quantity,
+          group_id,
+          type,
+          flight_id: flightId,
+          isFinished: false,
+        });
 
-      if (!flightOffered) {
-        throw new Error('Vuelo no encontrado');
-      }
-
-      const flightId = flightOffered.id;
-
-      // Crear un documento de vuelo en la base de datos para cada vuelo
-      const newOffer = await Offers.create({
-        auction_id,
-        proposal_id,
-        departure_airport,
-        arrival_airport,
-        departure_time,
-        airline,
-        quantity,
-        group_id,
-        type,
-        flight_id: flightId,
-        isFinished: false,
-      });
-
-      console.log('Oferta creada:', newOffer);
-      // Enviar una respuesta de éxito
-      res.status(201).json({ message: 'Oferta creada exitosamente' });
+        console.log('Oferta creada:', newOffer);
+        // Enviar una respuesta de éxito
+        res.status(201).json({ message: 'Oferta creada exitosamente' });
+    }
     } catch (error) {
       console.error('Error al crear oferta desde MQTT:', error);
       // Enviar una respuesta de error
@@ -80,13 +82,6 @@ class OfferController {
       if (type === 'incoming-offers') {
         const offers = await Offers.findAll({ where: {
           type: 'offer',
-          group_id: { [Op.ne]: '13'}
-        },
-        });
-      } else if (type === 'outgoing-offers') {
-        const offers = await Offers.findAll({ where: {
-          type: 'offer',
-          group_id: '13',
           isFinished: false,
         },
         });
@@ -184,7 +179,7 @@ class OfferController {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
-  
+
   static async placeOffer(req, res) {
     const { infoCompra_id, quantity } = req.body; // Asegúrate de que los nombres de los campos coincidan con los enviados desde el frontend
     try {
