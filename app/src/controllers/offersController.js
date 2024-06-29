@@ -184,9 +184,9 @@ class OfferController {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
-
+  
   static async placeOffer(req, res) {
-    const { infoCompra_id, quantity } = req.body;
+    const { infoCompra_id, quantity } = req.body; // Asegúrate de que los nombres de los campos coincidan con los enviados desde el frontend
     try {
       const infoCompra = await InfoCompras.findByPk(infoCompra_id);
       if (!infoCompra) {

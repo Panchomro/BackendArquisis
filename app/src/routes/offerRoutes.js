@@ -13,4 +13,6 @@ router.post('/sendOffer', OffersController.makeBid);
 
 router.post('/recieveBid', OffersController.recieveBid);
 
+router.post('/place-offer/:id', OffersController.placeOffer);
+
 module.exports = router;

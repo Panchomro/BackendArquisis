@@ -60,6 +60,7 @@ class InfoComprasController {
           seller: 0,
           isValidated: false,
           valid: false,
+          airline: vuelo.airline,
           user_ip: ip,
           reserved: false,
         });
@@ -81,6 +82,7 @@ class InfoComprasController {
           seller: 13,
           isValidated: false,
           valid: false,
+          airline: vuelo.airline,
           user_ip: ip,
           reserved: true,
         });
